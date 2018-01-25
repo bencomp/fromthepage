@@ -36,7 +36,7 @@ gem 'ahoy_matey'
 
 
 gem 'riiif'
-gem 'iiif-presentation'
+gem 'iiif-presentation', git: 'https://github.com/benwbrum/osullivan', branch: 'service_is_array'
 
 group :assets do
   gem 'therubyracer'
@@ -70,9 +70,6 @@ gem 'slim', '~> 3.0.0'
 
 # Gravatar Image Tag
 gem 'gravatar_image_tag'
-
-# New Relic
-gem 'newrelic_rpm'
 
 #Admin masquerade as a user
 gem 'devise_masquerade'

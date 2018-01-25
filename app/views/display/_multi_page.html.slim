@@ -18,13 +18,13 @@
         .work-page
           .work-page_thumbnail
             -if page.ia_leaf
-              =link_to(image_tag(page.ia_leaf.thumb_url), page_params(page) )
+              =link_to(image_tag(page.ia_leaf.thumb_url, alt: page.title), page_params(page) )
             -elsif page.sc_canvas
-              =link_to(image_tag(page.sc_canvas.thumbnail_url), page_params(page))
+              =link_to(image_tag(page.sc_canvas.thumbnail_url, alt: page.title), page_params(page))
             -elsif page.omeka_file
-              =link_to image_tag(page.omeka_file.thumbnail_url), page_params(page)
+              =link_to image_tag(page.omeka_file.thumbnail_url, alt: page.title), page_params(page)
             -else
-              =link_to image_tag(file_to_url(page.thumbnail_image)), page_params(page)
+              =link_to image_tag(file_to_url(page.thumbnail_image), alt: page.title), page_params(page)
 
           .work-page_content
             -if page.work.pages_are_meaningful
@@ -81,15 +81,19 @@
           =hidden_field_tag('collection_id', @collection.id)
           =search_field_tag 'search_string', @search_string, :placeholder => 'Search in collection...'
           =button_tag 'Search'
+          =label_tag 'search_string', "Search in collection", class: 'hidden'
 
       -if @work
         -if @total != @count
-          =button_to "View All Pages", {action: "read_work", work_id: @work.id, needs_review: 'none'}
+          =button_to "View All Pages", {action: "read_work", work_id: @work.id, needs_review: 'none'}, class: 'review-button'
         -else
-          =button_to "Pages That Need Review", {action: "read_work", work_id: @work.id, needs_review: 'review' }
-          br
+          =button_to "Pages That Need Transcription", {action: "read_work", work_id: @work.id, needs_review: 'transcription' }, class: 'review-button'
+          =button_to "Pages That Need Review", {action: "read_work", work_id: @work.id, needs_review: 'review' }, class: 'review-button'
+
           -if @work.supports_translation
-            =button_to "Translations That Need Review", {action: "read_work", work_id: @work.id, needs_review: 'translation'}
+            =button_to "Pages That Need Translation", {action: "read_work", work_id: @work.id, needs_review: 'translation' }, class: 'review-button'
+            =button_to "Translations That Need Review", {action: "read_work", work_id: @work.id, needs_review: 'translation_review'}, class: 'review-button'
+
           
 
 
@@ -101,7 +105,7 @@
 
       -if @collection.categories.present?
         -unless @collection.subjects_disabled
-          h3 Categories
+          h3.categories Categories
           .category-tree
             ==display_categories(@collection.categories, nil, true) do |category|
               -link_url = url_for(:controller => 'article', :action => 'list', :collection_id => @collection.id, :anchor => "category-#{category.id}")
