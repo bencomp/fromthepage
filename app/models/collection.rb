@@ -10,13 +10,14 @@ class Collection < ActiveRecord::Base
   has_many :articles, :dependent => :destroy
   has_many :document_sets, -> { order 'title' }, :dependent => :destroy
   has_many :categories, -> { order 'title' }
-  has_many :deeds, -> { order 'created_at DESC' }, :dependent => :destroy
+  has_many :deeds, -> { order 'deeds.created_at DESC' }, :dependent => :destroy
   has_one :sc_collection, :dependent => :destroy
+  has_many :transcription_fields, :dependent => :destroy
 
   belongs_to :owner, :class_name => 'User', :foreign_key => 'owner_user_id'
   has_and_belongs_to_many :owners, :class_name => 'User', :join_table => :collection_owners
   has_and_belongs_to_many :collaborators, :class_name => 'User', :join_table => :collection_collaborators
-  attr_accessible :title, :intro_block, :footer_block, :picture, :subjects_disabled, :transcription_conventions, :slug, :review_workflow, :hide_completed, :help, :link_help
+  attr_accessible :title, :intro_block, :footer_block, :picture, :subjects_disabled, :transcription_conventions, :slug, :review_workflow, :hide_completed, :help, :link_help, :voice_recognition, :language, :text_language, :pct_completed
 #  attr_accessor :picture
 
   validates :title, presence: true, length: { minimum: 3, maximum: 255 }
@@ -30,6 +31,17 @@ class Collection < ActiveRecord::Base
 
   scope :order_by_recent_activity, -> { joins(:deeds).order('deeds.created_at DESC') }
   scope :unrestricted, -> { where(restricted: false)}
+  scope :order_by_incomplete, -> { joins(works: :work_statistic).reorder('work_statistics.complete ASC')}
+  scope :carousel, -> {where(pct_completed: [nil, 1..90]).where.not(picture: nil).where.not(intro_block: [nil, '']).where(restricted: false).reorder("RAND()")}
+
+  def page_metadata_fields
+    page_fields = []
+    works.each do |w| 
+      page_fields += w.pages.first.metadata.keys if w.pages.first && w.pages.first.metadata
+    end
+     
+    page_fields.uniq
+  end
 
   def export_subjects_as_csv
     csv_string = CSV.generate(:force_quotes => true) do |csv|
@@ -106,7 +118,7 @@ class Collection < ActiveRecord::Base
     #for each page, delete page versions, update all attributes, save
     pages.each do |p|
       p.page_versions.destroy_all
-      p.update_columns(source_text: nil, base_image:nil, base_width: nil, base_height: nil, shrink_factor: nil, created_on: Time.now, lock_version: 0, xml_text: nil, status: nil, source_translation: nil, xml_translation: nil, translation_status: nil, search_text: "\n\n\n\n")
+      p.update_columns(source_text: nil, created_on: Time.now, lock_version: 0, xml_text: nil, status: nil, source_translation: nil, xml_translation: nil, translation_status: nil, search_text: "\n\n\n\n")
       p.save!
     end
 
@@ -122,6 +134,75 @@ class Collection < ActiveRecord::Base
     self.works.where("title LIKE ?", "%#{search}%")
   end
 
+  def self.search(search)
+    where("title LIKE ? OR slug LIKE ?", "%#{search}%", "%#{search}%")
+  end
+
+  def sections
+    Section.where(work_id: self.works.ids)
+  end
+
+  #constant
+  LANGUAGE_ARRAY = [['Afrikaans', 'af', ['af-ZA']],
+ ['አማርኛ', 'am', ['am-ET']],
+ ['Azərbaycanca', 'az', ['az-AZ']],
+ ['বাংলা', 'bn', ['bn-BD', 'বাংলাদেশ'], ['bn-IN', 'ভারত']],
+ ['Bahasa Indonesia', 'id', ['id-ID']],
+ ['Bahasa Melayu', 'ms', ['ms-MY']],
+ ['Català', 'ca', ['ca-ES']],
+ ['Čeština', 'cs', ['cs-CZ']],
+ ['Dansk', 'da', ['da-DK']],
+ ['Deutsch', 'de', ['de-DE']],
+ ['English', 'en', ['en-AU', 'Australia'], ['en-CA', 'Canada'], ['en-IN', 'India'], ['en-KE', 'Kenya'], ['en-TZ', 'Tanzania'], ['en-GH', 'Ghana'], ['en-NZ', 'New Zealand'], ['en-NG', 'Nigeria'], ['en-ZA', 'South Africa'], ['en-PH', 'Philippines'], ['en-GB', 'United Kingdom'], ['en-US', 'United States']],
+ ['Español', 'es', ['es-AR', 'Argentina'], ['es-BO', 'Bolivia'], ['es-CL', 'Chile'], ['es-CO', 'Colombia'], ['es-CR', 'Costa Rica'], ['es-EC', 'Ecuador'], ['es-SV', 'El Salvador'], ['es-ES', 'España'], ['es-US', 'Estados Unidos'], ['es-GT', 'Guatemala'], ['es-HN', 'Honduras'], ['es-MX', 'México'], ['es-NI', 'Nicaragua'], ['es-PA', 'Panamá'], ['es-PY', 'Paraguay'], ['es-PE', 'Perú'], ['es-PR', 'Puerto Rico'], ['es-DO', 'República Dominicana'], ['es-UY', 'Uruguay'], ['es-VE', 'Venezuela']],
+ ['Euskara', 'eu', ['eu-ES']],
+ ['Filipino', 'fil', ['fil-PH']],
+ ['Français', 'fr', ['fr-FR']],
+ ['Basa Jawa', 'jv', ['jv-ID']],
+ ['Galego', 'gl', ['gl-ES']],
+ ['ગુજરાતી', 'gu', ['gu-IN']],
+ ['Hrvatski', 'hr', ['hr-HR']],
+ ['IsiZulu', 'zu', ['zu-ZA']],
+ ['Íslenska', 'is', ['is-IS']],
+ ['Italiano', 'is', ['it-IT', 'Italia'], ['it-CH', 'Svizzera']],
+ ['ಕನ್ನಡ', 'kn', ['kn-IN']],
+ ['ភាសាខ្មែរ', 'km', ['km-KH']],
+ ['Latviešu', 'lv', ['lv-LV']],
+ ['Lietuvių', 'lt', ['lt-LT']],
+ ['മലയാളം', 'ml', ['ml-IN']],
+ ['मराठी', 'mr', ['mr-IN']],
+ ['Magyar', 'hu', ['hu-HU']],
+ ['ລາວ', 'lo', ['lo-LA']],
+ ['Nederlands', 'nl', ['nl-NL']],
+ ['नेपाली भाषा', 'ne', ['ne-NP']],
+ ['Norsk bokmål', 'nb', ['nb-NO']],
+ ['Polski', 'pl', ['pl-PL']],
+ ['Português', 'pt', ['pt-BR', 'Brasil'], ['pt-PT', 'Portugal']],
+ ['Română', 'ro', ['ro-RO']],
+ ['සිංහල', 'si', ['si-LK']],
+ ['Slovenščina', 'sl', ['sl-SI']],
+ ['Basa Sunda', 'su', ['su-ID']],
+ ['Slovenčina', 'sk', ['sk-SK']],
+ ['Suomi', 'fi', ['fi-FI']],
+ ['Svenska', 'sv', ['sv-SE']],
+ ['Kiswahili', 'sw', ['sw-TZ', 'Tanzania'], ['sw-KE', 'Kenya']],
+ ['ქართული', 'ka', ['ka-GE']],
+ ['Հայերեն', 'hy', ['hy-AM']],
+ ['தமிழ்', 'ta', ['ta-IN', 'இந்தியா'], ['ta-SG', 'சிங்கப்பூர்'], ['ta-LK', 'இலங்கை'], ['ta-MY', 'மலேசியா']],
+ ['తెలుగు', 'te', ['te-IN']],
+ ['Tiếng Việt', 'vi', ['vi-VN']],
+ ['Türkçe', 'tr', ['tr-TR']],
+ ['اُردُو', 'ur', ['ur-PK', 'پاکستان'], ['ur-IN', 'بھارت']],
+ ['Ελληνικά', 'el', ['el-GR']],
+ ['български', 'bg', ['bg-BG']],
+ ['Pусский', 'ru', ['ru-RU']],
+ ['Српски', 'sr', ['sr-RS']],
+ ['Українська', 'uk', ['uk-UA']],
+ ['한국어', 'ko', ['ko-KR']],
+ ['中文', 'cmn', 'yue', ['cmn-Hans-CN', '普通话 (中国大陆)'], ['cmn-Hans-HK', '普通话 (香港)'], ['cmn-Hant-TW', '中文 (台灣)'], ['yue-Hant-HK', '粵語 (香港)']],
+ ['日本語', 'ja', ['ja-JP']],
+ ['हिन्दी', 'hi', ['hi-IN']],
+ ['ภาษาไทย', 'th', ['th-TH']]];
 
   protected
     def set_transcription_conventions

@@ -3,13 +3,15 @@ class User < ActiveRecord::Base
   # :confirmable, :lockable, :timeoutable and :omniauthable
   devise :database_authenticatable, :registerable, :masqueradable, 
          :recoverable, :rememberable, :trackable, :validatable,
-         :encryptable, :encryptor => :restful_authentication_sha1
+         :omniauthable, :encryptable, :encryptor => :restful_authentication_sha1, 
+         :omniauth_providers => [:google_oauth2,:saml]
 
+  include OwnerStatistic
   extend FriendlyId
   friendly_id :slug_candidates, :use => [:slugged, :history]
 
   # Setup accessible (or protected) attributes for your model
-  attr_accessible :login, :email, :password, :password_confirmation, :remember_me, :owner, :display_name, :location, :website, :about, :print_name, :account_type, :paid_date, :slug
+  attr_accessible :login, :email, :password, :password_confirmation, :remember_me, :owner, :display_name, :location, :website, :about, :print_name, :account_type, :paid_date, :slug, :start_date
 
   # allows me to get at the user from other models
   cattr_accessor :current_user
@@ -24,6 +26,8 @@ class User < ActiveRecord::Base
   has_many :ia_works
   has_many :omeka_sites
   has_many :visits
+  has_one :notification, :dependent => :destroy
+
   has_and_belongs_to_many(:scribe_works,
                           { :join_table => 'transcribe_authorizations',
                             :class_name => 'Work'})
@@ -48,13 +52,29 @@ class User < ActiveRecord::Base
   validates :login, presence: true, uniqueness: { case_sensitive: false }, format: { with: /\A[a-zA-Z0-9_\.]*\z/, message: "Invalid characters in username"}, exclusion: { in: %w(transcribe translate work collection deed), message: "Username is invalid"}
   validates :website, allow_blank: true, format: { with: URI.regexp }
   
-  after_destroy :clean_up_orphans
+  after_save :create_notifications
+  #before_destroy :clean_up_orphans
 
-  def all_owner_collections
-    query = Collection.where("owner_user_id = ? or collections.id in (?)", self.id, self.owned_collections.ids)
-    Collection.where(query.where_values.inject(:or)).uniq.order(:title)
+  def self.from_omniauth(access_token)
+    data = access_token.info
+    user = User.where(email: data['email']).first  #Will need to do email or name/username
+    # Uncomment the section below if you want users to be created if they don't exist
+    unless user
+        user = User.create(name: data['name'],
+           login: data['email'].gsub(/@.*/,''),
+           email: data['email'],
+           password: Devise.friendly_token[0,20],
+           display_name: data['name'],
+           print_name: data['name']
+        )
+    end
+    user
   end
 
+  def all_owner_collections
+    query = Collection.where("collections.owner_user_id = ? or collections.id in (?)", self.id, self.owned_collections.ids)
+    Collection.where(query.where_values.inject(:or)).uniq.order(:title)
+  end
 
   def most_recently_managed_collection_id
     last_work = self.owner_works.order(:created_on).last
@@ -107,16 +127,12 @@ class User < ActiveRecord::Base
     end
   end
 
-  def collections
-    self.owned_collections + Collection.where(:owner_user_id => self.id)#.all
+  def name_with_identifier
+    self.display_name + ' - ' + self.email
   end
 
-  def owned_page_count
-    count = 0
-    self.all_owner_collections.each do |c|
-      count = count + c.page_count
-    end
-    return count
+  def collections
+    self.owned_collections + Collection.where(:owner_user_id => self.id)#.all
   end
 
   def self.find_first_by_auth_conditions(warden_conditions)
@@ -163,15 +179,29 @@ class User < ActiveRecord::Base
     super.truncate(240, separator: '-', omission: '').gsub('_', '-')
   end
 
-  def clean_up_orphans
-    self.notes.destroy_all
-    self.article_versions.destroy_all
-    self.page_versions.destroy_all
-    self.deeds.destroy_all
+  def soft_delete
+    if self.deeds.blank?
+      self.destroy
+    else
+      self.login = "deleted_#{self.id}_#{self.login}"
+      self.email = "deleted_#{self.email}"
+      self.display_name = "[deleted]"
+      self.deleted = true
+      self.admin = false
+      self.owner = false
+      self.password = [*'A'..'Z'].sample(8).join
+      self.save!
+    end
   end
+
   def self.search(search)
-    where("display_name LIKE ?", "%#{search}%")
-    where("login LIKE ?", "%#{search}%")
+    where("display_name LIKE ? OR login LIKE ?", "%#{search}%", "%#{search}%")
+  end
+
+  def create_notifications
+    unless self.notification
+      self.notification = Notification.new
+    end
   end
 
 end

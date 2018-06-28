@@ -10,6 +10,7 @@ describe "owner actions", :order => :defined do
     @collection = @collections.first
     @works = @owner.owner_works
     @title = "This is an empty work"
+    @rtl_collection = Collection.last
   end
 
   before :each do
@@ -93,7 +94,7 @@ describe "owner actions", :order => :defined do
     Collection.last.destroy
   end
 
-  it "creates a subject" do
+  it "creates a subject category" do
     @count = @collection.categories.count
     cat = @collection.categories.find_by(title: "People")
     visit collection_path(@collection.owner, @collection)
@@ -107,7 +108,7 @@ describe "owner actions", :order => :defined do
     expect(page).to have_content("New Test Category")
   end
 
-  it "deletes a subject" do
+  it "deletes a subject category" do
     @count = @collection.categories.count
     cat = @collection.categories.find_by(title: "New Test Category")
     visit collection_path(@collection.owner, @collection)
@@ -118,6 +119,28 @@ describe "owner actions", :order => :defined do
     expect(@count - 1).to eq (@collection.categories.count)
     visit "/article/list?collection_id=#{@collection.id}"
     expect(page).not_to have_content("New Test Category")
+  end
+
+  it "enables GIS for subject category" do
+    category = @collection.categories.find_by(title: "Places")
+    category.gis_enabled = false
+    category.save
+
+    visit collection_path(@collection.owner, @collection)
+    page.find('.tabs').click_link("Subjects")
+    @name = "#category-" + "#{category.id}"
+    page.find(@name).find('a', text: 'Enable GIS').click
+    expect(page.find('.flash_message')).to have_content("GIS enabled for Places")
+    page.find(@name).find('a', text: 'Add Child Category').click
+    fill_in 'category_title', with: 'Child GIS'
+    click_button('Create Category')
+    page.find(@name).find('a', text: 'Disable GIS').click
+    expect(page.find('.flash_message')).to have_content("GIS disabled for Places and 1 child category")
+    page.find(@name).find('a', text: 'Add Child Category').click
+    fill_in 'category_title', with: 'Child GIS-2'
+    click_button('Create Category')
+    page.find(@name).find('a', text: 'Enable GIS').click
+    expect(page.find('.flash_message')).to have_content("GIS enabled for Places and 2 child categories")
   end
 
   it "fails to create an empty work" do
@@ -140,7 +163,9 @@ describe "owner actions", :order => :defined do
     select(@collection.title, :from => 'work_collection_id')
     click_button('Save Changes')
     expect(page).to have_content("Work updated successfully")
-    expect(Deed.last.work_id).to eq (Work.find_by(title: @title).id)
+    work = Work.find_by(title: @title)
+    expect(Deed.last.work_id).to eq(work.id)
+    expect(work.deeds.where.not(:collection_id => work.collection_id).count).to eq(0)
     expect(page.find('.breadcrumbs')).to have_selector('a', text: @collection.title)
   end
 
@@ -202,7 +227,6 @@ describe "owner actions", :order => :defined do
     page.find('a', text: 'Your Profile').click
     expect(page).to have_content(@owner.display_name)
     expect(page).to have_selector('.columns')
-    expect(page.find('.maincol')).to have_content("Collections")
     expect(page).not_to have_content("Recent Activity by #{@owner.display_name}")
     @collections.each do |c|
         expect(page).to have_content(c.title)
@@ -210,6 +234,33 @@ describe "owner actions", :order => :defined do
     @owner.unrestricted_document_sets.each do |d|
       expect(page).to have_content(d.title)
     end
+  end
+
+  it "changes the collection's default language" do
+    visit edit_collection_path(@owner, @rtl_collection)
+    expect(page).to have_selector('#collection_text_language')
+    select('Arabic', from: 'collection_text_language')
+    click_button 'Save Changes'
+    #note: this is just to make sure it's on the settings page again
+    expect(page).to have_content('Collection Owners')
+    expect(Collection.last.text_language).to eq 'ara'
+  end
+
+  it "checks rtl transcription page views" do
+    rtl_page = @rtl_collection.works.first.pages.first
+    visit collection_transcribe_page_path(@rtl_collection.owner, @rtl_collection, rtl_page.work, rtl_page)
+    #check transcription page direction
+    expect(page.find('.page-editarea')[:dir]).to eq 'rtl'
+    #check overview page direction
+    page.find('.tabs').click_link('Overview')
+    expect(page.find('.page-preview')[:dir]).to eq 'rtl'
+  end
+
+  it "resets the default language" do
+    rtl_collection = Collection.last
+    rtl_collection.text_language = "eng"
+    rtl_collection.save!
+    expect(rtl_collection.text_language).to eq 'eng'
   end
 
 end

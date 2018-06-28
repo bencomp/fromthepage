@@ -11,7 +11,7 @@ class Work < ActiveRecord::Base
   has_one :sc_manifest, :dependent => :destroy
   has_one :work_statistic, :dependent => :destroy
   has_many :sections, -> { order 'position' }, :dependent => :destroy
-  has_many :table_cells, -> { order 'page_id, row, header' }, :dependent => :destroy
+  has_many :table_cells, :dependent => :destroy
 
   has_and_belongs_to_many :scribes, :class_name => 'User', :join_table => :transcribe_authorizations
   has_and_belongs_to_many :document_sets
@@ -47,6 +47,8 @@ class Work < ActiveRecord::Base
   scope :order_by_recent_activity, -> { joins(:deeds).reorder('deeds.created_at DESC').distinct }
   scope :order_by_completed, -> { joins(:work_statistic).reorder('work_statistics.complete DESC')}
   scope :order_by_translation_completed, -> { joins(:work_statistic).reorder('work_statistics.translation_complete DESC')}
+  scope :incomplete_transcription, -> { where(supports_translation: false).joins(:work_statistic).where.not(work_statistics: {complete: 100})}
+  scope :incomplete_translation, -> { where(supports_translation: true).joins(:work_statistic).where.not(work_statistics: {translation_complete: 100})}
 
   module TitleStyle
     REPLACE = 'REPLACE'
@@ -77,6 +79,26 @@ class Work < ActiveRecord::Base
     end
   end
   
+  def verbatim_transcription_plaintext
+    self.pages.map { |page| page.verbatim_transcription_plaintext}.join("\n\n\n")
+  end
+
+  def verbatim_translation_plaintext
+    self.pages.map { |page| page.verbatim_translation_plaintext}.join("\n\n\n")
+  end
+
+  def emended_transcription_plaintext
+    self.pages.map { |page| page.emended_transcription_plaintext}.join("\n\n\n")
+  end
+
+  def emended_translation_plaintext
+    self.pages.map { |page| page.emended_translation_plaintext}.join("\n\n\n")
+  end
+
+  def searchable_plaintext
+    self.pages.map { |page| page.search_text}.join("\n\n\n")
+  end
+
   def suggest_next_page_title
     if self.pages.count == 0
       TitleStyle::render(TitleStyle::DEFAULT, 1)    
@@ -96,6 +118,10 @@ class Work < ActiveRecord::Base
 
   def articles
     Article.joins(:page_article_links).where(page_article_links: {page_id: self.pages.ids}).distinct
+  end
+
+  def update_deed_collection
+    deeds.where.not(:collection_id => collection_id).update_all(:collection_id => collection_id)
   end
 
   # TODO make not awful
@@ -122,12 +148,10 @@ class Work < ActiveRecord::Base
   end
 
   def update_statistic
-    p 'update_statistic start'
     unless self.work_statistic
       self.work_statistic = WorkStatistic.new
     end
     self.work_statistic.recalculate
-    p 'update_statistic finish'
   end
 
   def set_transcription_conventions
@@ -144,7 +168,14 @@ class Work < ActiveRecord::Base
       Dir.glob(File.join(new_dir_name, "*")){|f| File.delete(f)}
       Dir.rmdir(new_dir_name)
     end
+  end
 
+  def completed
+    if self.supports_translation == true
+      self.work_statistic.translation_complete
+    else
+      self.work_statistic.complete
+    end
   end
 
   def thumbnail
@@ -187,6 +218,10 @@ class Work < ActiveRecord::Base
       num = (self.pages.count/3).round
       page = self.pages.offset(num).first
       self.update_columns(featured_page: page.id)
+  end
+
+  def field_based
+    self.collection.field_based
   end
 
 end

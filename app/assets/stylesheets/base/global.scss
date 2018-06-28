@@ -129,6 +129,10 @@ code {
   box-shadow: inset 0 0 0 1px rgba(#000, 0.08);
 }
 
+mark {
+  font-weight: bold;
+  text-decoration: underline;
+}
 
 .tabular {
   table {
@@ -188,3 +192,18 @@ code {
   }
 }
 
+.rtl {
+  p {text-align: right;}
+  p.settings {
+    direction: ltr;
+    text-align: left;
+    }
+  label {
+    margin-left: 5px;
+    margin-right: 5px;
+  }
+}
+
+p.rtl, h4.rtl, td.diff-version.rtl {
+  text-align: right;
+}

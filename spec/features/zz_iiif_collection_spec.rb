@@ -26,7 +26,7 @@ describe "uploads data for collections", :order => :defined do
     visit dashboard_owner_path
     page.find('.tabs').click_link("Start A Project")
     page.fill_in 'at_id', with: @at_id
-    click_button('Import')
+    find_button('iiif_import').click
     expect(page).to have_content(@at_id)
     expect(page).to have_content("Manifests")
     select("Create Collection", :from => 'manifest_import')
@@ -38,29 +38,21 @@ describe "uploads data for collections", :order => :defined do
     expect(Collection.last.works.count).not_to be_nil
   end
 
-  it "tests for transcribed works", :js => true do
-    col = Collection.last
+  it "tests for transcribed works" do
+    col = Collection.second
     works = col.works
     works.each do |w|
-      w.pages.each do |p|
-        p.update_columns(status: "transcribed")
-      end
+      w.pages.update_all(status: Page::STATUS_TRANSCRIBED, translation_status: Page::STATUS_TRANSLATED)
       w.work_statistic.recalculate
     end
     visit collection_path(col.owner, col)
     expect(page).to have_content("All works are fully transcribed")
-    page.find('a', text: "Click to show transcribed works").click
-    sleep(2)
+    page.click_link("Show All")
     expect(page).not_to have_content("All works are fully transcribed")
     expect(page).to have_content(works.first.title)
-    page.uncheck('hide_completed')
-    sleep(2)
+    page.click_link("Incomplete Works")
     expect(page).to have_content("All works are fully transcribed")
-    expect(page).not_to have_content(works.first.title)
-    page.check('hide_completed')
-    sleep(2)
-    expect(page).not_to have_content("All works are fully transcribed")
-    expect(page).to have_content(works.first.title)
+    expect(page).not_to have_content(works.last.title)
   end
 
   it "cleans up the logfile" do

@@ -1,9 +1,8 @@
 dist: trusty
 sudo: false
 language: ruby
-cache: bundler
 
-rvm: 2.2.0
+rvm: 2.2.10
 
 jobs:
   include:
@@ -34,6 +33,9 @@ before_install:
   - sudo apt-get -qq update
   - sudo apt-get install ghostscript
   - sudo apt-get install graphviz
+  - sudo apt-get install libqt5webkit5-dev gstreamer1.0-plugins-base gstreamer1.0-tools gstreamer1.0-x
+  - export QMAKE=/usr/lib/x86_64-linux-gnu/qt5/bin/qmake
+  - qtchooser -qt=qt5
   - bash travis/.travis_setup.sh
 
 before_script:
@@ -42,11 +44,12 @@ before_script:
   - bundle exec rake db:fixtures:load FIXTURES_PATH=spec/fixtures
 
 script:
-  - xvfb-run bundle exec rspec spec/features/
+  - xvfb-run bundle exec rspec spec/features
 
 branches:
   only:
     - master
     - ui-design
+    - development
     - fromthepage.com
     - indianapolis

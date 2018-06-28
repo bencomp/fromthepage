@@ -23,27 +23,31 @@ class Page < ActiveRecord::Base
   has_one :ia_leaf, :dependent => :destroy
   has_one :omeka_file, :dependent => :destroy
   has_one :sc_canvas, :dependent => :destroy
-  has_many :table_cells, -> { order 'section_id, row, header' }, :dependent => :destroy
+  has_many :table_cells, :dependent => :destroy
   has_many :tex_figures, :dependent => :destroy
+  has_many :deeds, :dependent => :destroy
 
   after_save :create_version
   after_save :update_sections_and_tables
   after_save :update_tex_figures
   after_initialize :defaults
   after_destroy :update_work_stats
-  after_destroy :delete_deeds
+#  after_destroy :delete_deeds
   after_destroy :update_featured_page, if: Proc.new {|page| page.work.featured_page == page.id}
 
   attr_accessible :title
   attr_accessible :source_text
   attr_accessible :source_translation
   attr_accessible :status
+  attr_accessible :metadata
+  serialize :metadata, Hash
 
-  scope :unrestricted, -> { where(restricted: false)}
   scope :review, -> { where(status: 'review')}
   scope :translation_review, -> { where(translation_status: 'review')}
   scope :needs_transcription, -> { where(status: nil)}
   scope :needs_translation, -> { where(translation_status: nil)}
+  scope :needs_index, -> { where.not(status: nil).where.not(status: 'indexed')}
+  scope :needs_translation_index, -> { where.not(translation_status: nil).where.not(translation_status: 'indexed')}
   
   module TEXT_TYPE
     TRANSCRIPTION = 'transcription'
@@ -59,6 +63,10 @@ class Page < ActiveRecord::Base
   # tested
   def collection
     work.collection
+  end
+
+  def field_based
+    self.collection.field_based
   end
 
   def articles_with_text
@@ -129,8 +137,11 @@ class Page < ActiveRecord::Base
     if self.ia_leaf
       return nil
     end
+    if self.base_image.blank?
+      return nil
+    end
     if !File.exists?(thumbnail_filename())
-      if File.exists? self.base_image
+      if File.exists?(modernize_absolute(self.base_image))
         generate_thumbnail
       end
     end
@@ -178,7 +189,6 @@ class Page < ActiveRecord::Base
     if @sections
       self.sections.each { |s| s.delete }
       self.table_cells.each { |c| c.delete }
-  #    binding.pry
       
       @sections.each do |section|
         section.pages << self
@@ -247,6 +257,47 @@ UPDATE `articles` SET graph_image=NULL WHERE `articles`.`id` IN (SELECT article_
   def populate_search
     self.search_text = SearchTranslator.search_text_from_xml(self.xml_text, self.xml_translation)
   end
+  
+  def verbatim_transcription_plaintext
+    formatted_plaintext(self.xml_text)
+  end
+
+  def verbatim_translation_plaintext
+    formatted_plaintext(self.xml_translation)
+  end
+
+  def emended_transcription_plaintext
+    emended_plaintext(self.xml_text)
+  end
+
+  def emended_translation_plaintext
+    emended_plaintext(self.xml_translation)
+  end
+
+  #create table cells if the collection is field based
+  def process_fields(field_cells)
+    string = String.new
+    cells = self.table_cells.each {|c| c.delete}
+    unless field_cells.blank?
+      field_cells.each do |id, cell_data|
+        tc = TableCell.new(row: 1)
+        tc.work = self.work
+        tc.page = self
+        tc.transcription_field_id = id.to_i
+
+        cell_data.each do |key, value|
+          #tc = TableCell.new(row: 1, header: key, content: value)
+          tc.header = key
+          tc.content = value
+          string << key + ": " + value + "\n\n"
+        end
+
+        tc.save!
+      end
+    end
+    self.source_text = string
+
+  end
 
 
   #######################
@@ -268,8 +319,10 @@ UPDATE `articles` SET graph_image=NULL WHERE `articles`.`id` IN (SELECT article_
     return link.id
   end
 
+
+
   def thumbnail_filename
-    filename=self.base_image
+    filename=modernize_absolute(self.base_image)
     ext=File.extname(filename)
     filename.sub("#{ext}","_thumb#{ext}")
   end
@@ -291,8 +344,32 @@ UPDATE `articles` SET graph_image=NULL WHERE `articles`.`id` IN (SELECT article_
   end
 
 private
+  def emended_plaintext(source)
+    doc = Nokogiri::XML(source)
+    doc.xpath("//link").each { |n| n.replace(n['target_title'])}    
+    formatted_plaintext_doc(doc)
+  end
+
+  def formatted_plaintext(source)
+    formatted_plaintext_doc(Nokogiri::XML(source))
+  end
+
+  def formatted_plaintext_doc(doc)
+    doc.xpath("//p").each { |n| n.add_next_sibling("\n")}
+    doc.xpath("//lb").each { |n| n.replace("\n")}
+    doc.text.sub(/^\s*/m, '')        
+  end
+
+  def modernize_absolute(filename)
+    if filename
+      File.join(Rails.root, 'public', filename.sub(/.*public/, ''))
+    else
+      ""
+    end
+  end
+
   def generate_thumbnail
-    image = Magick::ImageList.new(self[:base_image])
+    image = Magick::ImageList.new(modernize_absolute(self[:base_image]))
     factor = 100.to_f / self[:base_height].to_f
     image.thumbnail!(factor)
     image.write(thumbnail_filename)

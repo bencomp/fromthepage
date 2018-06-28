@@ -7,7 +7,6 @@
 
 .collection-search {
   position: relative;
-  //margin-bottom: 2em;
   padding-right: 75px;
   input[type=search] {
     height: 34px;
@@ -34,6 +33,7 @@
 .collection-intro {
   width: 100%;
   display: table;
+  margin-bottom: $gapSize/2;
   &_image {
     display: table-cell;
     vertical-align: top;
@@ -105,6 +105,10 @@
 
 .hidden {
   visibility: hidden;
+}
+
+.user-label.owner {
+  margin: $gapSize 0 $gapSize;
 }
 
 // Collection users
@@ -370,25 +374,6 @@
 // Collection settings
 
 .collection-works-manage {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  li {
-    margin: 0;
-    width: 100%;
-    position: relative;
-    display: inline-block;
-    padding: $gapSize / 4;
-    padding-right: 100px;
-    box-sizing: border-box;
-    border: 1px solid rgba(#000, 0.08);
-    border-width: 0 0 1px 0;
-    &:first-child { border-top-width: 1px; }
-    &:hover {
-      background-color: rgba(#000, 0.03);
-      .action { display: block; }
-    }
-  }
   .action {
     top: 50%;
     display: none;
@@ -400,6 +385,62 @@
     margin-top: -$iconSize / 2;
     &:hover { color: $fgHover; }
     .icon { vertical-align: top; }
+  }
+}
+
+.collection-settings {
+  td input[type="checkbox"] {
+    margin-right: 5px;
+    margin-top: 10px;
+  }
+  td select {
+    margin-top: 10px;
+  }
+  .collection-label {
+    margin-right: 10px;
+  }
+}
+
+//Edit transcription fields
+.button.fields {
+  margin: $gapSize/2 $gapSize/2 0 0;
+}
+
+.toolbar.fields {
+  width: 95%;
+}
+
+.field_form {
+  width: 100%;
+  //border-collapse: separate;
+  table-layout: auto;
+  label { margin-left: 5px;}
+  th {
+    font-weight: normal;
+    white-space: nowrap;
+    text-align: left;
+    word-wrap: break-word;
+    padding: 4px 0 4px 8px;
+  }
+  td {
+    padding: 4px 0 4px 8px;
+  }
+  margin-bottom: 15px;
+  .first {width: 15px;}
+  .fourth {width: 100%;}
+  .percent {width: 50px;}
+
+  textarea {
+    height: calc(2em + 2px);
+  }
+}
+
+a.field_icons {
+  margin: 5px;
+  color: $bodyFgLight;
+  display: inline-block;
+  &:hover {
+    color: $bodyFg;
   }
 }
 
@@ -417,13 +458,19 @@
     width: 30%;
     float: left;
   }
-  .transcribed {
+  .start_link {
     float: right;
-    padding: 6px 15px 0 0;
+    margin: 0 0 .5em 0;
     label {
       display: inline;
     }
   }
+}
+
+p.transcribed {
+  text-align: right;
+  margin: 0;
+  font-style: italic;
 }
 
 // Collection footer

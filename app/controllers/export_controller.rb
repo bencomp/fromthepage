@@ -1,6 +1,10 @@
+require 'contentdm_translator'
 class ExportController < ApplicationController
   require 'zip'
   include CollectionHelper
+
+  # no layout if xhr request
+  layout Proc.new { |controller| controller.request.xhr? ? false : nil } #, :only => [:update, :update_profile]
 
   def index
     @collection = Collection.friendly.find(params[:collection_id])
@@ -13,6 +17,7 @@ class ExportController < ApplicationController
 
     @works = @collection.works.includes(:work_statistic).paginate(page: params[:page], per_page: 15)
 
+    @table_export = @collection.works.joins(:table_cells).where.not(table_cells: {work_id: nil}).distinct
   end
 
   def show
@@ -53,17 +58,17 @@ class ExportController < ApplicationController
   end
 
   def subject_csv
-    cookies['download_finished'] = 'true'
     send_data(@collection.export_subjects_as_csv,
               :filename => "fromthepage_subjects_export_#{@collection.id}_#{Time.now.utc.iso8601}.csv",
               :type => "application/csv")
+    # cookies['download_finished'] = 'true'
   end
   
   def table_csv
-    cookies['download_finished'] = 'true'
     send_data(export_tables_as_csv(@work),
-              :filename => "fromthepage_tables_export_#{@collection.id}_#{Time.now.utc.iso8601}.csv",
+              :filename => "fromthepage_tables_export_#{@work.id}_#{Time.now.utc.iso8601}.csv",
               :type => "application/csv")
+    cookies['download_finished'] = 'true'
     
   end
 
@@ -91,58 +96,209 @@ class ExportController < ApplicationController
       end
     end
     cookies['download_finished'] = 'true'
-
   end
 
-private
+  def export_all_tables
+    send_data(export_tables_as_csv(@collection),
+              :filename => "fromthepage_tables_export_#{@collection.id}_#{Time.now.utc.iso8601}.csv",
+              :type => "application/csv")
+    cookies['download_finished'] = 'true'
+   
+  end
 
-  def export_tables_as_csv(work)
-    raw_headings = work.table_cells.pluck('DISTINCT header')
-    headings = []
-    raw_headings.each do |raw_heading|
-      munged_heading = raw_heading  #.sub(/^\s*!?/,'').sub(/\s*$/,'')
-      headings << "#{munged_heading} (text)"
-      headings << "#{munged_heading} (subject)"
+  def page_plaintext_verbatim
+    render  :layout => false, :content_type => "text/plain", :text => @page.verbatim_transcription_plaintext
+  end
+
+  def page_plaintext_translation_verbatim
+    render  :layout => false, :content_type => "text/plain", :text => @page.verbatim_translation_plaintext
+  end
+
+  def page_plaintext_emended
+    render  :layout => false, :content_type => "text/plain", :text => @page.emended_transcription_plaintext
+  end
+
+  def page_plaintext_translation_emended
+    render  :layout => false, :content_type => "text/plain", :text => @page.emended_translation_plaintext
+  end
+
+  def page_plaintext_searchable
+    render  :layout => false, :content_type => "text/plain", :text => @page.search_text
+  end
+
+  def work_plaintext_verbatim
+    render  :layout => false, :content_type => "text/plain", :text => @work.verbatim_transcription_plaintext
+  end
+
+  def work_plaintext_translation_verbatim
+    render  :layout => false, :content_type => "text/plain", :text => @work.verbatim_translation_plaintext
+  end
+
+  def work_plaintext_emended
+    render  :layout => false, :content_type => "text/plain", :text => @work.emended_transcription_plaintext
+  end
+
+  def work_plaintext_translation_emended
+    render  :layout => false, :content_type => "text/plain", :text => @work.emended_translation_plaintext
+  end
+
+  def work_plaintext_searchable
+    render  :layout => false, :content_type => "text/plain", :text => @work.searchable_plaintext
+  end
+  
+  
+  def edit_contentdm_credentials
+    # display the edit form
+  end
+  
+  def update_contentdm_credentials
+    # test credentials
+    license_key = params[:collection][:license_key]
+    contentdm_user_name = params[:contentdm_user_name]
+    contentdm_password = params[:contentdm_password]
+    
+    error_message, fts_field = ContentdmTranslator.fst_field_for_collection(@collection, license_key, contentdm_user_name, contentdm_password)
+
+    # persist license key so the user doesn't have to retype it    
+    if error_message.blank? || !error_message.match(/license.*invalid/)
+      @collection.license_key = license_key
+      @collection.save!
     end
     
+    # redirect to or render edit screen with error
+    if error_message
+      flash[:error] = error_message
+      render :action => :edit_contentdm_credentials, :collection_id => @collection.id
+      return
+    end
+
+    # pass credentials, FTS field, and search to background job
+    log_file = ContentdmTranslator.log_file(@collection)
+    cmd = "rake fromthepage:cdm_transcript_export[#{@collection.id}] > #{log_file} 2>&1 &"
+    logger.info(cmd)
+    system({'contentdm_username' => contentdm_user_name, 'contentdm_password' => contentdm_password, 'contentdm_license' => license_key}, cmd)
+
+    # display results somehow
+    flash[:notice] = "Updating CONTENTdm.  You should receive an email when the sync completes, then will need to rebuild your index for the changes to appear."
+    ajax_redirect_to :action => :index, :collection_id => @collection.id
+  end
+private
+
+  def get_headings(collection, ids)
+    field_headings = collection.transcription_fields.order(:position).pluck(:label)
+    cell_headings = TableCell.where(work_id: ids).pluck('DISTINCT header')
+    @raw_headings = (field_headings + cell_headings).uniq
+    @headings = []
+
+    @page_metadata_headings = collection.page_metadata_fields
+    @headings += @page_metadata_headings
+
+    #get headings from field-based
+    field_headings.each do |raw_heading|
+      @headings << "#{raw_heading} (text)"
+      @headings << "#{raw_heading} (subject)"
+    end
+    #get headings from non-field-based
+    cell_headings.each do |raw_heading|
+      @headings << "#{raw_heading} (text)"
+      @headings << "#{raw_heading} (subject)"
+    end
+    @headings.uniq!
+  end
+
+  def export_tables_as_csv(table_obj)
+    if table_obj.is_a?(Collection)
+      collection = table_obj
+      ids = table_obj.works.ids
+      works = table_obj.works
+    elsif table_obj.is_a?(Work)
+      collection = table_obj.collection
+      #need arrays so they will act equivalently to the collection works
+      ids = [table_obj.id]
+      works = [table_obj]
+    end
+
+    get_headings(collection, ids)
+
     csv_string = CSV.generate(:force_quotes => true) do |csv|
-      csv << (['Page Title', 'Page Position', 'Page URL', 'Section (text)', 'Section (subjects)', 'Section (subject categories)' ] + headings)
-      work.pages.includes(:table_cells).each do |page|
-        unless page.table_cells.empty?
-          page_url=url_for({:controller=>'display',:action => 'display_page', :page_id => page.id, :only_path => false})
-          page_cells = [page.title, page.position, page_url]
-          data_cells = Array.new(headings.count + 1, "")
-          section_title_text = nil
-          section_title_subjects = nil
-          section_title_categories = nil
-          section = nil
-          row = nil
-          page.table_cells.includes(:section).each do |cell|
-            if section != cell.section
-              section_title_text = XmlSourceProcessor::cell_to_plaintext(cell.section.title)
-              section_title_subjects = XmlSourceProcessor::cell_to_subject(cell.section.title)
-              section_title_categories = XmlSourceProcessor::cell_to_category(cell.section.title)
-            end 
-            if row != cell.row
-              if row
-                # write the record to the CSV and start a new record
-                csv << (page_cells + data_cells)
-              end
-              data_cells = Array.new(headings.count + 3, "")            
-              data_cells[0] = section_title_text
-              data_cells[1] = section_title_subjects
-              data_cells[2] = section_title_categories
-              row = cell.row
+      if table_obj.sections.blank?
+        csv << (['Work Title', 'Work Identifier', 'Page Title', 'Page Position', 'Page URL' ] + @headings)
+        col_sections = false
+      else
+        csv << (['Work Title', 'Work Identifier', 'Page Title', 'Page Position', 'Page URL', 'Section (text)', 'Section (subjects)', 'Section (subject categories)' ] + @headings)
+        col_sections = true
+      end
+      works.each do |w|
+        csv = generate_csv(w, csv, col_sections)
+      end
+    end
+    cookies['download_finished'] = 'true'
+    csv_string
+  end
+
+  def generate_csv(work, csv, col_sections)
+    work.pages.includes(:table_cells).each do |page|
+      unless page.table_cells.empty?
+        page_url=url_for({:controller=>'display',:action => 'display_page', :page_id => page.id, :only_path => false})
+        page_cells = [work.title, work.identifier, page.title, page.position, page_url]
+        page_metadata_cells = page_metadata_cells(page)
+        data_cells = Array.new(@headings.count, "")
+
+        if page.sections.blank?
+          #get cell data for a page with only one table
+          page.table_cells.group_by(&:row).each do |row, cell_array|
+            #get the cell data and add it to the array
+            cell_data(cell_array, @raw_headings, data_cells)
+            #shift cells over if any page has sections
+            if !col_sections
+              section_cells = []
+            else
+              section_cells = ["", "", ""]
             end
-            
-            target = raw_headings.index(cell.header) + 1
-            data_cells[target*2-1] = XmlSourceProcessor.cell_to_plaintext(cell.content)
-            data_cells[target*2] = XmlSourceProcessor.cell_to_subject(cell.content)
+            # write the record to the CSV and start a new record
+            csv << (page_cells + page_metadata_cells + section_cells + data_cells)
+            #create a new array for the next row
+            data_cells = Array.new(@headings.count, "")
+          end
+
+        else
+          #get the table sections/headers and iterate cells within the sections
+          page.sections.each do |section|
+            section_title_text = XmlSourceProcessor::cell_to_plaintext(section.title) || nil
+            section_title_subjects = XmlSourceProcessor::cell_to_subject(section.title) || nil
+            section_title_categories = XmlSourceProcessor::cell_to_category(section.title) || nil
+            section_cells = [section_title_text, section_title_subjects, section_title_categories]
+            #group the table cells per section into rows
+            section.table_cells.group_by(&:row).each do |row, cell_array|
+              #get the cell data and add it to the array
+              cell_data(cell_array, @raw_headings, data_cells)
+              # write the record to the CSV and start a new record
+              csv << (page_cells + page_metadata_cells + section_cells + data_cells)
+              #create a new array for the next row
+              data_cells = Array.new(@headings.count, "")
+            end
           end
         end
       end
     end
-    csv_string
+    return csv
+  end
+
+  def page_metadata_cells(page)
+    metadata_cells = []
+    @page_metadata_headings.each do |key|
+      metadata_cells << page.metadata[key]
+    end
+    
+    metadata_cells
+  end
+
+  def cell_data(array, raw_headings, data_cells)
+    array.each do |cell|
+      target = (raw_headings.index(cell.header))*2
+      data_cells[target] = XmlSourceProcessor.cell_to_plaintext(cell.content)
+      data_cells[target+1] = XmlSourceProcessor.cell_to_subject(cell.content)
+    end
   end
 
 

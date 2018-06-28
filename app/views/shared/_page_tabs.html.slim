@@ -39,7 +39,13 @@
   :path => "#{collection_page_version_path(@collection.owner, @collection, @work, @page.id)}",
 }]
 
--if @work.owner == current_user
+-tabs += [{\
+  :name => 'Help',
+  :selected => 9,
+  :path => "#{collection_help_page_path(@collection.owner, @collection, @work, @page.id)}",
+}]
+
+-if user_signed_in? && current_user.like_owner?(@work)
   -tabs += [{\
     :name => 'Settings',
     :selected => 4,
@@ -59,7 +65,7 @@
     nav.page-nav
       -if @page != @work.pages.first
         -higher_item = @page.higher_item
-        =link_to({ :page_id => higher_item.id }, class: 'page-nav_prev', title: 'Previous page', 'aria-label' => 'Previous page')
+        =link_to({ :page_id => higher_item.id }, class: 'page-nav_prev', title: 'Previous page', 'aria-label' => 'Previous page', onclick: 'unsavedTranscription(event);')
           =svg_symbol '#icon-arrow-left', class: 'icon', title: 'Previous page'
       -else
         span.page-nav_prev =svg_symbol '#icon-arrow-left', class: 'icon'
@@ -68,7 +74,7 @@
 
       -if !@page.last?
         -lower_item = @page.lower_item
-        =link_to({ :page_id => lower_item.id }, class: 'page-nav_next', title: 'Next page', 'aria-label' => 'Next page')
+        =link_to({ :page_id => lower_item.id }, class: 'page-nav_next', title: 'Next page', 'aria-label' => 'Next page', onclick: 'unsavedTranscription(event);')
           =svg_symbol '#icon-arrow-right', class: 'icon', title: 'Next page'
       -else
         span.page-nav_next =svg_symbol '#icon-arrow-right', class: 'icon'

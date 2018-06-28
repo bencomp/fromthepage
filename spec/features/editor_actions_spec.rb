@@ -6,31 +6,61 @@ describe "editor actions" , :order => :defined do
   before :all do
     @owner = User.find_by(login: OWNER)
     @user = User.find_by(login: USER)
+    @rest_user = User.find_by(login: REST_USER)
     collection_ids = Deed.where(user_id: @user.id).distinct.pluck(:collection_id)
     @collections = Collection.where(id: collection_ids)
     @collection = @collections.first
     @work = @collection.works.first
     @page = @work.pages.first
-    @auth = TranscribeAuthorization.find_by(user_id: @user.id)
+    @auth_work = Collection.last.works.second
+    #set up the restricted user not to be emailed
+    notification = Notification.find_by(user_id: @rest_user.id)
+    notification.add_as_collaborator = false
+    notification.save!
   end
 
   before :each do
     login_as(@user, :scope => :user)
-  end    
-
-  it "checks that an editor with permissions can see a restricted work" do
-    visit "/display/read_work?work_id=#{@auth.work_id}"
-    page.find('.work-page_title', text: @work.pages.first.title).click_link
-    expect(page.find('.tabs')).to have_content("Transcribe")
   end
 
   it "checks that a restricted editor can't see a work" do
     logout(:user)
-    @rest_user = User.find_by(login: REST_USER)
     login_as(@rest_user, :scope => :user)
-    visit "/display/read_work?work_id=#{@auth.work_id}"
+    visit collection_read_work_path(@auth_work.owner, @auth_work.collection, @auth_work)
     page.find('.work-page_title', text: @work.pages.first.title).click_link
     expect(page.find('.tabs')).not_to have_content("Transcribe")
+  end
+
+  it "adds a user to a restricted work" do
+    ActionMailer::Base.deliveries.clear
+    logout(:user)
+    login_as(@owner, :scope => :user)
+    visit edit_collection_work_path(@auth_work.owner, @auth_work.collection, @auth_work)
+    #this user should not get an email
+    select(@rest_user.name_with_identifier, from: 'user_id')
+    page.find('#user_id+button').click
+    expect(ActionMailer::Base.deliveries).to be_empty
+    #this user should get an email
+    select(@user.name_with_identifier, from: 'user_id')
+    page.find('#user_id+button').click
+    expect(ActionMailer::Base.deliveries).not_to be_empty
+    expect(ActionMailer::Base.deliveries.first.to).to include @user.email
+    expect(ActionMailer::Base.deliveries.first.subject).to eq "You've been added to #{@auth_work.title}"
+    expect(ActionMailer::Base.deliveries.first.body.encoded).to match("added you as a collaborator")
+  end
+
+  it "checks that an editor with permissions can see a restricted work" do
+    visit collection_read_work_path(@auth_work.owner, @auth_work.collection, @auth_work)
+    page.find('.work-page_title', text: @work.pages.first.title).click_link
+    expect(page.find('.tabs')).to have_content("Transcribe")
+  end
+
+  it "removes a collaborator from a restricted work" do
+    logout(:user)
+    login_as(@owner, :scope => :user)
+    visit edit_collection_work_path(@auth_work.owner, @auth_work.collection, @auth_work)
+    page.find('.user-label', text: @rest_user.name_with_identifier).find('a.remove').click
+    expect(page).not_to have_selector('.user-label', text: @rest_user.name_with_identifier)
   end
 
   it "looks at a collection" do
@@ -51,7 +81,6 @@ describe "editor actions" , :order => :defined do
     expect(page.find('.tabs')).not_to have_content("Settings")
     expect(page.find('.tabs')).not_to have_content("Export")
     expect(page.find('.tabs')).not_to have_content("Collaborators")
-
   end
 
   it "looks at a work" do
@@ -140,7 +169,7 @@ describe "editor actions" , :order => :defined do
 
   it "tries to log in as another user" do
     visit "/users/masquerade/#{@owner.id}"
-    expect(page.current_path).to eq dashboard_path
+    expect(page.current_path).to eq collections_list_path
     expect(page.find('.dropdown')).not_to have_content @owner.display_name
     expect(page).to have_content @user.display_name
     expect(page).not_to have_selector('a', text: 'Undo Login As')
@@ -165,6 +194,7 @@ describe "editor actions" , :order => :defined do
     message = accept_alert do
       click_button('Save Changes')
     end
+    sleep(2)
     expect(message).to have_content("You have unsaved notes.")
     new_text = Page.find_by(id: test_page.id).source_text
     #because of the note, page.source_text should not have changed
@@ -183,6 +213,27 @@ describe "editor actions" , :order => :defined do
     page.click_link('', :href => "/notes/#{title}")
     sleep(3)
     expect(Note.find_by(id: title)).to be_nil
+  end
+
+  it "uses page arrows with unsaved transcription", :js => true do
+    col = Collection.second
+    test_page = col.works.first.pages.second
+    #next page arrow
+    visit collection_transcribe_page_path(col.owner, col, test_page.work, test_page)
+    fill_in 'page_source_text', with: "Attempt to save"
+    message = accept_alert do
+      page.click_link("Next page")
+    end
+    sleep(3)
+    expect(message).to have_content("You have unsaved changes.")
+    visit collection_transcribe_page_path(col.owner, col, test_page.work, test_page)
+    #previous page arrow - make sure it also works with notes
+    fill_in('Write a new note...', with: "Test two")
+    message = accept_alert do
+      page.click_link("Previous page")
+    end
+    sleep(3)
+    expect(message).to have_content("You have unsaved changes.")
   end
 
   it "filters list of pages the need transcription" do
@@ -246,7 +297,20 @@ describe "editor actions" , :order => :defined do
     expect(page.find('.pagination_info')).to have_content(@work.pages.count)
   end
 
-
-
+  it "finds a page to transcribe" do
+    visit collection_path(@collection.owner, @collection)
+    expect(page).to have_selector('h1', text: @collection.title)
+    expect(page).to have_content("About")
+    expect(page).to have_content("Works")
+    expect(page).not_to have_selector('a', text: "Start Transcribing")
+    col = Collection.third
+    visit collection_path(col.owner, col)
+    expect(page).to have_selector('h1', text: col.title)
+    expect(page).to have_content("About")
+    expect(page).to have_content("Works")
+    expect(page).to have_selector('a', text: "Start Transcribing")
+    click_link("Start Transcribing")
+    expect(page).to have_selector("#page_source_text")
+  end
 
 end

@@ -1,6 +1,6 @@
 -tabs = [{\
   :name => 'Start A Project',
-  :selected => 5,
+  :selected => 2,
   :options => {\
     :action => 'startproject',
   },
@@ -9,6 +9,12 @@
   :selected => 1,
   :options => {\
     :action => 'owner',
+  },
+},{\
+  :name => 'Summary',
+  :selected => 3,
+  :options => {\
+    :action => 'summary',
   },
 }]
 
@@ -26,14 +32,20 @@
         -unless current_user.all_owner_collections.empty?
         =link_to 'Create a Collection', { :controller => 'collection', :action => 'new' }, :data => { litebox: { hash: 'create-collection' } }
 
+-if !(current_user.account_type == nil)
+  .owner-info
+    |#{current_user.account_type} account
+    -unless (current_user.start_date == nil)
+      span &nbsp;since #{current_user.start_date.strftime('%b %d, %Y')}
+    -unless (current_user.paid_date == nil)
+      span &nbsp;&middot;&nbsp;Current subscription expires #{current_user.paid_date.strftime('%b %d, %Y')}
+    span &nbsp;&middot;&nbsp;Total pages: #{current_user.page_count}
+
 section.owner-counters
   .counter(data-prefix="#{number_with_delimiter @collections.length}") #{'Collection'.pluralize(@collections.length)}
   .counter(data-prefix="#{number_with_delimiter @works.length}") #{'Work'.pluralize(@works.length)}
-  .counter(data-prefix="#{number_with_delimiter @notes.length}") #{'Note'.pluralize(@notes.length)}
   -unless @document_sets.empty?
     .counter(data-prefix="#{number_with_delimiter @document_sets.length}") #{'Document Set'.pluralize(@document_sets.length)}
-  
-
 
 .tabs
   -for tab in tabs

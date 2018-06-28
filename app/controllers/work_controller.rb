@@ -86,6 +86,15 @@ class WorkController < ApplicationController
 
   def add_scribe
     @work.scribes << @user
+    if @user.notification.add_as_collaborator
+      if SMTP_ENABLED
+        begin
+          UserMailer.work_collaborator(@user, @work).deliver!
+        rescue StandardError => e
+          print "SMTP Failed: Exception: #{e.message}"
+        end
+      end
+    end
     redirect_to :action => 'edit', :work_id => @work
   end
 
@@ -151,7 +160,6 @@ class WorkController < ApplicationController
 
   def change_collection
     work = Work.find_by(id: params[:id])
-
     record_deed(work)
     unless work.articles.blank?
       #delete page_article_links for this work
@@ -170,6 +178,8 @@ class WorkController < ApplicationController
       end
       work.save!
     end
+    work.update_deed_collection
+    
   end
 
   def revert
