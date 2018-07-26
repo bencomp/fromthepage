@@ -17,7 +17,6 @@ gem 'rvm1-capistrano3', require: false
 gem 'jquery-rails'
 gem 'savon', '~> 2.12.0'
 gem 'mysql2','0.3.21'
-gem 'tzinfo-data'
 
 gem 'recaptcha', '0.3.6'
 
@@ -67,7 +66,7 @@ end
 gem 'sass-rails', '~> 5.0.0'
 
 # Use Autoprefixer for vendor prefixes
-gem 'autoprefixer-rails'
+gem 'autoprefixer-rails', '~>8'
 
 # Use Slim for templates
 gem 'slim', '~> 3.0.0'
