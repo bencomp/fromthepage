@@ -629,8 +629,6 @@ GEM
     timeout (0.4.1)
     tzinfo (2.0.6)
       concurrent-ruby (~> 1.0)
-    uglifier (4.2.0)
-      execjs (>= 0.3.0, < 3)
     unicode-display_width (2.5.0)
     uniform_notifier (1.16.0)
     user_agent_parser (2.17.0)
@@ -746,7 +744,6 @@ DEPENDENCIES
   terser
   text
   thredded (~> 1.0)
-  uglifier
   user_agent_parser
   vcr
   warning
