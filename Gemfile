@@ -9,8 +9,6 @@ gem 'rails', '6.1.7.6'
 gem 'capistrano', '~> 3.10', require: false
 gem 'capistrano-bundler', '~> 1.6'
 gem 'capistrano-rails', '~> 1.4', require: false
-gem 'jquery-rails'
-gem 'jquery-ui-sass-rails'
 gem 'mysql2'
 gem 'nokogiri'
 gem 'postmark-rails'
@@ -70,12 +68,17 @@ gem 'forty_facets'
 gem 'diffy'
 gem 'edtf'
 gem 'edtf-humanize'
-gem 'terser'
 
 gem 'interactor-rails', '~> 2.0'
 
 group :assets do
-  gem 'uglifier'
+  # Use Autoprefixer for vendor prefixes
+  gem 'autoprefixer-rails'
+  gem 'jquery-rails'
+  gem 'jquery-ui-sass-rails'
+  # Use SassC for stylesheets
+  gem 'sassc-rails'
+  gem 'terser'
 end
 
 group :test do
@@ -107,12 +110,6 @@ group :development, :test do
 end
 
 gem 'dotenv', group: [:development, :test], require: 'dotenv/load'
-
-# Use SassC for stylesheets
-gem 'sassc-rails'
-
-# Use Autoprefixer for vendor prefixes
-gem 'autoprefixer-rails'
 
 # Use Slim for templates
 gem 'slim'
