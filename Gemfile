@@ -98,6 +98,7 @@ group :development, :test do
   gem 'better_errors'
   gem 'binding_of_caller'
   gem 'bullet'
+  gem 'dotenv', require: 'dotenv/load'
   gem 'dotenv-rails'
   gem 'easy_translate'
   gem 'factory_bot_rails'
@@ -109,7 +110,6 @@ group :development, :test do
   gem 'rspec-rails'
 end
 
-gem 'dotenv', group: [:development, :test], require: 'dotenv/load'
 
 # Use Slim for templates
 gem 'slim'
