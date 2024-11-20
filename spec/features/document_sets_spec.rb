@@ -1,7 +1,6 @@
 require 'spec_helper'
 
 describe "document sets", :order => :defined do
-
   before :all do
     @owner = User.find_by(login: OWNER)
     @user = User.find_by(login: USER)
@@ -20,10 +19,10 @@ describe "document sets", :order => :defined do
   end
 
   it "sets up works for doc set tests" do
-    #turns off hiding worksso it doesn't mess up doc sets test (it isn't relevant)
+    # turns off hiding worksso it doesn't mess up doc sets test (it isn't relevant)
     @collection.hide_completed = false
     @collection.save
-    #change work restrictions temporarily so they don't interfere with doc set permissions
+    # change work restrictions temporarily so they don't interfere with doc set permissions
     work = Work.find_by(id: @set.works.first.id)
     work.restrict_scribes = false
     work.save!
@@ -62,7 +61,7 @@ describe "document sets", :order => :defined do
 
   it "makes a document set private" do
     login_as(@owner, :scope => :user)
-    #create an additional document set to make private
+    # create an additional document set to make private
     visit document_sets_path(:collection_id => @collection)
     page.find('.button', text: 'Create a Document Set').click
     page.fill_in 'document_set_title', with: "Test Document Set 3"
@@ -71,11 +70,11 @@ describe "document sets", :order => :defined do
     expect(page.find('h1')).to have_content("Test Document Set 3")
     expect(DocumentSet.last.is_public).to be true
     expect(page).not_to have_content('Allowed Collaborators')
-    #make the set private
+    # make the set private
     page.find('.button', text: 'Make Document Set Private').click
     expect(DocumentSet.last.is_public).to be false
     expect(page).to have_content('Allowed Collaborators')
-    #manually assign works until have the jqery test set
+    # manually assign works until have the jqery test set
     id = @collection.works.third.id
     DocumentSet.last.work_ids = id
     DocumentSet.last.save!
@@ -83,10 +82,10 @@ describe "document sets", :order => :defined do
   end
 
   it "views document sets - regular user" do
-    #need to restrict collection to test user view
+    # need to restrict collection to test user view
     @collection.restricted = true
     @collection.save!
-    #user with no privileges first
+    # user with no privileges first
     @test_set = DocumentSet.last
     login_as(@user, :scope => :user)
     visit dashboard_path
@@ -104,7 +103,7 @@ describe "document sets", :order => :defined do
         expect(page).not_to have_content(set.title)
       end
     end
-    #check to view public document set
+    # check to view public document set
     page.find('.maincol').find('a', text: @set.title).click
     expect(page).to have_content("Overview")
     expect(page).to have_content(@collection.works.first.title)
@@ -121,11 +120,11 @@ describe "document sets", :order => :defined do
     page.find('.work-page_title').click_link(@set.works.first.pages.first.title)
     expect(page.current_path).not_to eq collections_list_path
     expect(page.find('h1')).to have_content(@set.works.first.pages.first.title)
-    #can a restricted user access a private doc set through a link
+    # can a restricted user access a private doc set through a link
     visit collection_path(@owner, @test_set)
     expect(page.current_path).to eq user_profile_path(@owner)
     expect(page.find('h1')).not_to have_content(@test_set.title)
-    #can a restricted user see a work from a private collection through a link
+    # can a restricted user see a work from a private collection through a link
     visit collection_read_work_path(@owner, @collection, @collection.works.last)
     expect(page.current_path).to eq user_profile_path(@owner)
     expect(page.find('h1')).not_to have_content(@collection.works.last.title)
@@ -173,14 +172,14 @@ describe "document sets", :order => :defined do
         end
       end
     end
-    #check collaborator access to private doc set
+    # check collaborator access to private doc set
     visit collection_path(@owner, @test_set)
     expect(page.find('h1')).to have_content(@test_set.title)
     expect(page.find('.maincol')).to have_content(@test_set.works.first.title)
-    #check collaborator access through a link
+    # check collaborator access through a link
     visit collection_read_work_path(@owner, @test_set, @test_set.works.first)
     expect(page.find('h1')).to have_content(@test_set.works.first.title)
-    #check that the collaborator can't access other private doc set
+    # check that the collaborator can't access other private doc set
     visit collection_read_work_path(@owner, DocumentSet.second, DocumentSet.second.works.first)
     expect(page.current_path).to eq user_profile_path(@owner)
     expect(page.find('h1')).not_to have_content(DocumentSet.second.works.first.title)
@@ -195,7 +194,8 @@ describe "document sets", :order => :defined do
     note = Note.last
     visit collection_path(@set.owner, @set)
     page.find('a', text: "Test private note").click
-    expect(page.current_path).to eq collection_display_page_path(@set.owner, @set, @set.works.first, @set.works.first.pages.first)
+    expect(page.current_path).to eq collection_display_page_path(@set.owner, @set, @set.works.first,
+                                                                 @set.works.first.pages.first)
     page.find('.user-bubble_content', text: "Test private note")
 
     # test activity stream for set
@@ -204,8 +204,8 @@ describe "document sets", :order => :defined do
     find("#show-more-deeds").click
     expect(page).to have_content "Test private note"
     page.find('a', text: @set.works.first.pages.first.title).click
-    expect(page.current_path).to eq collection_display_page_path(@set.owner, @set, @set.works.first, @set.works.first.pages.first)
-
+    expect(page.current_path).to eq collection_display_page_path(@set.owner, @set, @set.works.first,
+                                                                 @set.works.first.pages.first)
 
     # test activity stream for collection
     login_as(@owner, :scope => :user)
@@ -214,19 +214,20 @@ describe "document sets", :order => :defined do
     find("#show-more-deeds").click
     expect(page).to have_content "Test private note"
     page.find('a', text: @set.works.first.pages.first.title).click
-    expect(page.current_path).to eq collection_display_page_path(@set.owner, @set.collection, @set.works.first, @set.works.first.pages.first)
+    expect(page.current_path).to eq collection_display_page_path(@set.owner, @set.collection, @set.works.first,
+                                                                 @set.works.first.pages.first)
   end
 
   it "cleans up test data" do
     @test_set = DocumentSet.last
     @collection.restricted = false
     @collection.save!
-    #delete the new document set
+    # delete the new document set
     login_as(@owner, :scope => :user)
     visit document_sets_path(:collection_id => @collection)
     within(page.find('#sets')) do
       within(page.find('tr', text: @test_set.title)) do
-          page.find('a', text: 'Delete').click
+        page.find('a', text: 'Delete').click
       end
     end
     expect(DocumentSet.all.ids).not_to include @test_set.id
@@ -274,7 +275,7 @@ describe "document sets", :order => :defined do
     expect(page.find('.category-tree')).to have_content(@set.categories.first.title)
     expect(page.current_path).to eq "/#{@owner.slug}/#{@set.slug}/subjects"
     expect(page.find('h1')).to have_content(@set.title)
-    #expect to have only article from document sets
+    # expect to have only article from document sets
     expect(page).to have_selector('.category-article', text: @article.title)
     expect(page).not_to have_selector('.category-article', text: @collection.articles.last.title)
     page.find('a', text: @article.title).click
@@ -384,14 +385,14 @@ describe "document sets", :order => :defined do
     work = @set.works.first
     @page = work.pages.first
 
-    #make sure it's right if you click on the page from the work
+    # make sure it's right if you click on the page from the work
     visit "/#{@owner.slug}/#{@set.slug}/#{work.slug}"
     expect(page.find('.breadcrumbs')).to have_selector('a', text: @set.title)
     page.find('.work-page_title', text: @page.title).click_link
     expect(page.find('.breadcrumbs')).to have_selector('a', text: @set.title)
     expect(page.find('.breadcrumbs')).to have_selector('a', text: work.title)
 
-    #so that it doesn't matter if the page has been transcribed, go directly to overview
+    # so that it doesn't matter if the page has been transcribed, go directly to overview
     visit "/#{@owner.slug}/#{@set.slug}/#{work.slug}/display/#{@page.id}"
     expect(page.find('.breadcrumbs')).to have_selector('a', text: @set.title)
     expect(page.find('.breadcrumbs')).to have_selector('a', text: work.title)
@@ -485,20 +486,20 @@ describe "document sets", :order => :defined do
     page.find_button('Save Document Set').click
     expect(page.find('h1')).to have_content @set.title
     expect(DocumentSet.find_by(id: @set.id).slug).to eq "#{slug}"
-    #check new path
+    # check new path
     visit "/#{@owner.slug}/#{slug}"
     expect(page).to have_selector('h1', text: @set.title)
     @set.works.each do |w|
       expect(page).to have_content w.title
     end
-    #check the old path
-    #(this variable is stored at the beginning of the test, so it's the original)
+    # check the old path
+    # (this variable is stored at the beginning of the test, so it's the original)
     visit "/#{@owner.slug}/#{@set.slug}"
     expect(page).to have_selector('h1', text: @set.title)
     @set.works.each do |w|
       expect(page).to have_content w.title
     end
-    #blank out doc set slug
+    # blank out doc set slug
     visit "/#{@owner.slug}/#{@set.slug}"
     expect(page).to have_selector('h1', text: @set.title)
     page.find('.tabs').click_link('Settings')
@@ -508,20 +509,19 @@ describe "document sets", :order => :defined do
     page.fill_in 'document_set_slug', with: ""
     page.find_button('Save Document Set').click
     docset = DocumentSet.find_by(id: @set.id)
-    #note - the document set title was changed so the slug is slightly different
+    # note - the document set title was changed so the slug is slightly different
     expect(docset.slug).to eq docset.title.parameterize
   end
 
   it "resets work settings" do
-    #resets hiding completed works
+    # resets hiding completed works
     @collection.hide_completed = true
     @collection.save
-    #resets work restrictions
+    # resets work restrictions
     unless @owner.account_type == "Individual Researcher"
       work = Work.find_by(id: @set.works.first.id)
-    work.restrict_scribes = true
-    work.save!
+      work.restrict_scribes = true
+      work.save!
     end
   end
-
 end

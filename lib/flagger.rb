@@ -12,7 +12,6 @@ class Flagger
     end
   end
 
-
   def self.check(content)
     initialize_denylist
     # look for suspicious strings

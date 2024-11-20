@@ -1,7 +1,8 @@
 module AbstractXmlHelper
   require 'rexml/document'
 
-  SANITIZE_ALLOWED_TAGS = %w(table tr td th thead tbody tfoot caption colgroup col a abbr acronym address b big blockquote br cite code del dfn div em font h1 h2 h3 h4 h5 h6 hr i img ins kbd li ol p pre q s samp small span strike strong sub sup tt u ul var time)
+  SANITIZE_ALLOWED_TAGS = %w(table tr td th thead tbody tfoot caption colgroup col a abbr acronym address b big
+                             blockquote br cite code del dfn div em font h1 h2 h3 h4 h5 h6 hr i img ins kbd li ol p pre q s samp small span strike strong sub sup tt u ul var time)
 
   SANITIZE_ALLOWED_ATTRIBUTES = [
     'abbr',
@@ -39,8 +40,9 @@ module AbstractXmlHelper
     return html
   end
 
-  def xml_to_html(xml_text, preserve_lb=true, flatten_links=false, collection=nil, highlight_article_id=nil)
+  def xml_to_html(xml_text, preserve_lb = true, flatten_links = false, collection = nil, highlight_article_id = nil)
     return "" if xml_text.blank?
+
     xml_text.gsub!(/\n/, "")
     xml_text.gsub!('ISO-8859-15', 'UTF-8')
 
@@ -51,7 +53,7 @@ module AbstractXmlHelper
     @collection ||= collection
 
     doc = REXML::Document.new(xml_text)
-    #unless subject linking is disabled, do this
+    # unless subject linking is disabled, do this
     unless @collection.subjects_disabled
       doc.elements.each("//link") do |e|
         title = e.attributes['target_title']
@@ -67,10 +69,12 @@ module AbstractXmlHelper
               anchor.add_attribute("href", "#article-#{id}")
             end
           else
-            anchor.add_attribute("data-tooltip", url_for(:controller => 'article', :action => 'tooltip', :article_id => id, :collection_id => @collection.slug))
+            anchor.add_attribute("data-tooltip",
+                                 url_for(:controller => 'article', :action => 'tooltip', :article_id => id,
+                                         :collection_id => @collection.slug))
             anchor.add_attribute("href", url_for(:controller => 'article', :action => 'show', :article_id => id))
             if highlight_article_id && id == highlight_article_id
-              anchor.add_attribute("class", "highlighted")  # Add the class attribute for highlighting
+              anchor.add_attribute("class", "highlighted") # Add the class attribute for highlighting
             end
           end
         else
@@ -86,7 +90,7 @@ module AbstractXmlHelper
       when_value = e.attributes["when"]
       time = REXML::Element.new("time")
       time.add_attribute("datetime", when_value)
-      e.children.each{|e| time.add(e)}
+      e.children.each { |e| time.add(e) }
       e.replace_with(time)
     end
 
@@ -164,17 +168,17 @@ module AbstractXmlHelper
           if sib.kind_of? REXML::Element
             sib.add_text(sigil)
           else
-            sib.value=sib.value+sigil unless sib.nil?
+            sib.value = sib.value + sigil unless sib.nil?
           end
         end
         e.replace_with(REXML::Element.new('br'))
       else
-          if e.attributes['break'] == "no"
-            lb.add_text('')
-          else
-            lb.add_text(' ')
-            lb.add_attribute('class', 'line-break')
-          end
+        if e.attributes['break'] == "no"
+          lb.add_text('')
+        else
+          lb.add_text(' ')
+          lb.add_attribute('class', 'line-break')
+        end
       end
 
       e.replace_with(lb) unless preserve_lb
@@ -200,35 +204,35 @@ module AbstractXmlHelper
 
     doc.elements.each("//hi") do |e|
       rend = e.attributes["rend"]
-      span=e
+      span = e
       case rend
       when 'sup'
-        span.name='sup'
+        span.name = 'sup'
       when 'underline'
-        span.name='u'
+        span.name = 'u'
       when 'italics'
-        span.name='i'
+        span.name = 'i'
         span.attributes.delete 'rend'
       when 'bold'
-        span.name='i'
+        span.name = 'i'
       when 'sub'
-        span.name='sub'
+        span.name = 'sub'
       when 'str'
-        span.name='strike'
+        span.name = 'strike'
       end
     end
 
     doc.elements.each("//add") do |e|
-      e.name='span'
+      e.name = 'span'
       e.add_attribute('class', "addition")
     end
 
     doc.elements.each("//figure") do |e|
       rend = e.attributes["rend"]
       if rend == 'hr'
-        e.name='hr'
+        e.name = 'hr'
       else
-        e.name='span'
+        e.name = 'span'
         rend ||= 'figure'
         e.add_text("{#{rend.titleize}}")
       end
@@ -276,8 +280,6 @@ module AbstractXmlHelper
       e.replace_with(stamp)
     end
 
-
-
     doc.elements.each("//table") do |e|
       rend = e.attributes["rend"]
       if rend == 'ruled'
@@ -286,12 +288,11 @@ module AbstractXmlHelper
     end
 
     doc.elements.each("//row") do |e|
-      e.name='tr'
+      e.name = 'tr'
     end
 
-
     doc.elements.each("//cell") do |e|
-      e.name='td'
+      e.name = 'td'
     end
 
     if @page
@@ -299,7 +300,9 @@ module AbstractXmlHelper
         position = e.attributes["position"]
 
         span = REXML::Element.new('img')
-        span.add_attribute('src', (file_to_url(TexFigure.artifact_file_path(@page.id, position)) + "?timestamp=" + Time.now.to_i.to_s))
+        span.add_attribute('src',
+                           (file_to_url(TexFigure.artifact_file_path(@page.id,
+                                                                     position)) + "?timestamp=" + Time.now.to_i.to_s))
 
         e.replace_with(span)
       end
@@ -319,16 +322,15 @@ module AbstractXmlHelper
     my_display_html = ""
     doc.write(my_display_html)
     my_display_html.gsub!("</p>", "</p>\n\n")
-    my_display_html.gsub!("<br/>","<br/>\n")
-    my_display_html.gsub!("<?xml version='1.0' encoding='UTF-8'?>","")
-    my_display_html.gsub!('<p/>','')
-    my_display_html.gsub!(/<\/?page>/,'')
+    my_display_html.gsub!("<br/>", "<br/>\n")
+    my_display_html.gsub!("<?xml version='1.0' encoding='UTF-8'?>", "")
+    my_display_html.gsub!('<p/>', '')
+    my_display_html.gsub!(/<\/?page>/, '')
 
     ActionController::Base.helpers.sanitize(
       my_display_html.strip,
       tags: SANITIZE_ALLOWED_TAGS,
       attributes: SANITIZE_ALLOWED_ATTRIBUTES
-    ).gsub('<br>','<br/>').gsub('<hr>','<hr/>')
+    ).gsub('<br>', '<br/>').gsub('<hr>', '<hr/>')
   end
-
 end

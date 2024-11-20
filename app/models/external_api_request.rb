@@ -32,7 +32,6 @@ class ExternalApiRequest < ApplicationRecord
   belongs_to :work
   belongs_to :page
 
-
   module Status
     QUEUED = 'queued'
     RUNNING = 'running'
@@ -45,7 +44,6 @@ class ExternalApiRequest < ApplicationRecord
     end
   end
 
-
   # params are serialized as json so we need accessors that let us work with ruby hashes
   def params
     if self[:params].blank?
@@ -56,11 +54,10 @@ class ExternalApiRequest < ApplicationRecord
   end
 
   def params=(hash)
-    self[:params]=hash.to_json
+    self[:params] = hash.to_json
   end
 
   module Engine
     TRANSKRIBUS = 'transkribus'
   end
-  
 end

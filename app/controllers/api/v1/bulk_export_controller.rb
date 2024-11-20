@@ -17,12 +17,13 @@ module Api::V1
         else
           exports = @api_user.bulk_exports
         end
-        render json: exports.to_json(except: [:updated_at, :user_id, :collection_id], include: {:collection => {only: [:title, :slug]}})
+        render json: exports.to_json(except: [:updated_at, :user_id, :collection_id],
+                                     include: { :collection => { only: [:title,
+                                                                        :slug] } })
       else
         render status: 401, json: 'You must use an API token to access bulk exports'
       end
     end
-
 
     def start
       if @api_user
@@ -101,7 +102,6 @@ module Api::V1
       end
     end
 
-
     def download
       if @api_user
         bulk_export_id = params[:bulk_export_id]
@@ -109,16 +109,18 @@ module Api::V1
           bulk_export = @api_user.bulk_exports.where(:id => bulk_export_id).first
           if bulk_export
             if bulk_export.status == BulkExport::Status::FINISHED
-              send_file(bulk_export.zip_file_name, 
-                filename: "fromthepage_export.zip", 
-                :content_type => "application/zip")
+              send_file(bulk_export.zip_file_name,
+                        filename: "fromthepage_export.zip",
+                        :content_type => "application/zip")
             else
               if bulk_export.status == BulkExport::Status::CLEANED
                 render status: 410, json: "Bulk export #{bulk_export_id} has been deleted.  Please start a new export."
               elsif bulk_export.status == BulkExport::Status::ERROR
-                render status: 410, json: "Bulk export #{bulk_export_id} failed with an error.  Please report this to support.  Re-running an export with different requested formats might succeed."
+                render status: 410,
+                       json: "Bulk export #{bulk_export_id} failed with an error.  Please report this to support.  Re-running an export with different requested formats might succeed."
               else
-                render status: 409, json: "Bulk export #{bulk_export_id} is not ready to download.  It is probably still running, but might have failed with an un-caught error."
+                render status: 409,
+                       json: "Bulk export #{bulk_export_id} is not ready to download.  It is probably still running, but might have failed with an un-caught error."
               end
             end
           else
@@ -133,6 +135,5 @@ module Api::V1
     end
 
     private
-
   end
 end

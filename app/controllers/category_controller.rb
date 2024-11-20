@@ -23,7 +23,7 @@ class CategoryController < ApplicationController
       @new_category.collection = @collection.collection
     else
       @new_category.collection = @collection
-    end      
+    end
     if @category.present?
       @new_category.parent = @category
       @new_category.gis_enabled = @category.gis_enabled
@@ -43,15 +43,15 @@ class CategoryController < ApplicationController
 
   def delete
     anchor = @category.parent_id.present? ? "category-#{@category.parent_id}" : nil
-    @category.destroy #_but_attach_children_to_parent
+    @category.destroy # _but_attach_children_to_parent
 
     flash[:notice] = t('.category_deleted')
-    ajax_redirect_to collection_subjects_path(@collection.owner, @collection, {:anchor => anchor})
+    ajax_redirect_to collection_subjects_path(@collection.owner, @collection, { :anchor => anchor })
   end
 
   def enable_gis
     @category.update_attribute(:gis_enabled, true)
-    @category.descendants.each {|d| d.update_attribute(:gis_enabled, true)}
+    @category.descendants.each { |d| d.update_attribute(:gis_enabled, true) }
 
     notice = t('.gis_enabled_for', title: @category.title)
     count = @category.descendants.count
@@ -60,12 +60,12 @@ class CategoryController < ApplicationController
     end
 
     flash[:notice] = notice
-    ajax_redirect_to collection_subjects_path(@collection.owner, @collection, {:anchor => "category-#{@category.id }"})
+    ajax_redirect_to collection_subjects_path(@collection.owner, @collection, { :anchor => "category-#{@category.id}" })
   end
 
   def disable_gis
     @category.update_attribute(:gis_enabled, false)
-    @category.descendants.each {|d| d.update_attribute(:gis_enabled, false)}
+    @category.descendants.each { |d| d.update_attribute(:gis_enabled, false) }
 
     notice = t('.gis_disabled_for', title: @category.title)
     count = @category.descendants.count
@@ -74,7 +74,7 @@ class CategoryController < ApplicationController
     end
 
     flash[:notice] = notice
-    ajax_redirect_to collection_subjects_path(@collection.owner, @collection, {:anchor => "category-#{@category.id }"})
+    ajax_redirect_to collection_subjects_path(@collection.owner, @collection, { :anchor => "category-#{@category.id}" })
   end
 
   private

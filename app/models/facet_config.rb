@@ -24,13 +24,12 @@ class FacetConfig < ApplicationRecord
   validates :order, inclusion: { in: 0..9, if: :type_text? }, allow_blank: true
   validates :order, inclusion: { in: 0..2, if: :type_date? }, allow_blank: true
 
-
   def label_hash
     label_hash = JSON.parse(self.label)
   end
-  
+
   def localized_label(locale)
-    return nil if self.label.nil? 
+    return nil if self.label.nil?
 
     locale_label = label_hash[locale.to_s]
     if locale_label
@@ -63,7 +62,6 @@ class FacetConfig < ApplicationRecord
           label = o['label']
           value = o['value']
 
-
           if label == facet.metadata_coverage.key
             input_type = facet['input_type']
 
@@ -92,7 +90,6 @@ class FacetConfig < ApplicationRecord
       w.work_facet.update(new_attributes)
     end
   end
-
 
   def self.update_facets(work)
     if work.collection.facets_enabled?

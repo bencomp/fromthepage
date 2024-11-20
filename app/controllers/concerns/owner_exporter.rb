@@ -1,5 +1,4 @@
 module OwnerExporter
-
   def detailed_activity_csv(owner, start_date, end_date)
     dates = (start_date..end_date)
 
@@ -8,15 +7,14 @@ module OwnerExporter
       "Email"
     ]
 
-    headers += dates.map{|d| d.strftime("%b %d, %Y")}
+    headers += dates.map { |d| d.strftime("%b %d, %Y") }
 
     # Get Row Data (Users)
-    owner_collections = owner.all_owner_collections.map{ |c| c.id }
-
+    owner_collections = owner.all_owner_collections.map { |c| c.id }
 
     contributor_ids_for_dates = AhoyActivitySummary
-      .where(collection_id: owner_collections)
-      .where('date BETWEEN ? AND ?', start_date, end_date).distinct.pluck(:user_id)
+                                .where(collection_id: owner_collections)
+                                .where('date BETWEEN ? AND ?', start_date, end_date).distinct.pluck(:user_id)
 
     contributors = User.where(id: contributor_ids_for_dates).order(:display_name)
 
@@ -26,14 +24,14 @@ module OwnerExporter
         row = [user.display_name, user.email]
 
         activity = AhoyActivitySummary
-          .where(user_id: user.id)
-          .where(collection_id: owner_collections)
-          .where('date BETWEEN ? AND ?', start_date, end_date)
-          .group(:date)
-          .sum(:minutes)
-          .transform_keys{ |k| k.to_date }
+                   .where(user_id: user.id)
+                   .where(collection_id: owner_collections)
+                   .where('date BETWEEN ? AND ?', start_date, end_date)
+                   .group(:date)
+                   .sum(:minutes)
+                   .transform_keys { |k| k.to_date }
 
-        user_activity = dates.map{ |d| activity[d.to_date] || 0 }
+        user_activity = dates.map { |d| activity[d.to_date] || 0 }
 
         row += user_activity
 
@@ -52,13 +50,12 @@ module OwnerExporter
     @document_sets = current_user.document_sets
   end
 
-
   def owner_mailing_list_csv(owner)
     rows = []
     header = ['User Login', 'User Name', 'Email', 'Opt-In']
     collection_ids = owner.collections.map { |c| c.id }.sort
     deed_map = Deed.where(:collection_id => collection_ids).group(:user_id, :collection_id).count
-    user_ids = deed_map.keys.map {|e| e[0]}.uniq
+    user_ids = deed_map.keys.map { |e| e[0] }.uniq
     Collection.where(:id => collection_ids).order(:id).each { |c| header << c.title }
 
     User.find(user_ids).each do |user|
@@ -69,7 +66,7 @@ module OwnerExporter
       row << user.activity_email
 
       collection_ids.each do |collection_id|
-        row << deed_map[[user.id,collection_id]] || 0
+        row << deed_map[[user.id, collection_id]] || 0
       end
 
       rows << row
@@ -85,5 +82,4 @@ module OwnerExporter
 
     csv_string
   end
-
 end

@@ -80,10 +80,6 @@ Thredded.private_messaging_enabled = false
 # Thredded.layout = 'thredded/application'
 Thredded.layout = 'application'
 
-
-
-
-
 # ==> Email Configuration
 # Email "From:" field will use the following
 # (this is also used as the "To" address for both email notifcations, as all the recipients are on bcc)
@@ -194,8 +190,6 @@ Thredded.notifiers = []
 #
 # add in (must install separate gem (under development) as well):
 # Thredded.notifiers = [Thredded::EmailNotifier.new, Thredded::PushoverNotifier.new(ENV['PUSHOVER_APP_ID'])]
-
-
 
 Rails.application.config.to_prepare do
   Thredded.view_hooks.posts_common.pagination_top do |form:, **args|

@@ -1,7 +1,6 @@
 require 'spec_helper'
 
 describe "check for successful data upload" do
-
   before :all do
     @owner = User.find_by(login: OWNER)
   end
@@ -15,5 +14,4 @@ describe "check for successful data upload" do
     expect(page).to have_content(@work.title)
     expect(page).to have_content(@work.pages.first.title)
   end
-
 end

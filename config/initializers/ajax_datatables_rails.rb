@@ -1,3 +1,3 @@
 AjaxDatatablesRails.configure do |config|
-    config.db_adapter = :mysql
+  config.db_adapter = :mysql
 end

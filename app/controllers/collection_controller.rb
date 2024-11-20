@@ -1,6 +1,5 @@
 # handles administrative tasks for the collection object
 class CollectionController < ApplicationController
-
   include ContributorHelper
   include AddWorkHelper
   include CollectionHelper
@@ -31,13 +30,21 @@ class CollectionController < ApplicationController
     :new_mobile_user,
     :search_users
   ]
-  before_action :review_authorized?, :only => [:reviewer_dashboard, :works_to_review, :one_off_list, :recent_contributor_list, :user_contribution_list]
-  before_action :set_collection, :only => edit_actions + [:show, :update, :contributors, :new_work, :works_list, :needs_transcription_pages, :needs_review_pages, :start_transcribing]
-  before_action :load_settings, :only => edit_actions + [ :update, :upload, :edit_owners, :block_users, :remove_owner, :edit_collaborators, :remove_collaborator, :edit_reviewers, :remove_reviewer]
+  before_action :review_authorized?,
+                :only => [:reviewer_dashboard, :works_to_review, :one_off_list, :recent_contributor_list,
+                          :user_contribution_list]
+  before_action :set_collection,
+                :only => edit_actions + [:show, :update, :contributors, :new_work, :works_list, :needs_transcription_pages,
+                                         :needs_review_pages, :start_transcribing]
+  before_action :load_settings,
+                :only => edit_actions + [:update, :upload, :edit_owners, :block_users, :remove_owner, :edit_collaborators,
+                                         :remove_collaborator, :edit_reviewers, :remove_reviewer]
   before_action :permit_only_transcribed_works_flag, only: [:works_list]
 
   # no layout if xhr request
-  layout Proc.new { |controller| controller.request.xhr? ? false : nil }, :only => [:new, :create, :edit_buttons, :edit_owners, :remove_owner, :add_owner, :edit_collaborators, :remove_collaborator, :add_collaborator, :edit_reviewers, :remove_reviewer, :add_reviewer, :new_mobile_user]
+  layout Proc.new { |controller|
+    controller.request.xhr? ? false : nil
+  }, :only => [:new, :create, :edit_buttons, :edit_owners, :remove_owner, :add_owner, :edit_collaborators, :remove_collaborator, :add_collaborator, :edit_reviewers, :remove_reviewer, :add_reviewer, :new_mobile_user]
 
   def search_users
     query = "%#{params[:term].to_s.downcase}%"
@@ -70,9 +77,9 @@ class CollectionController < ApplicationController
 
   def reviewer_dashboard
     # works which have at least one page needing review
-    @total_pages=@collection.pages.count
-    @pages_needing_review=@collection.pages.where(status: :needs_review).count
-    @transcribed_pages=@collection.pages.where(status: Page::NOT_INCOMPLETE_STATUSES).count
+    @total_pages = @collection.pages.count
+    @pages_needing_review = @collection.pages.where(status: :needs_review).count
+    @transcribed_pages = @collection.pages.where(status: Page::NOT_INCOMPLETE_STATUSES).count
     @works_to_review = @collection.pages.where(status: :needs_review).pluck(:work_id).uniq.count
   end
 
@@ -129,7 +136,6 @@ class CollectionController < ApplicationController
 
     flash[:notice] = t('.editor_buttons_updated')
     ajax_redirect_to(edit_tasks_collection_path(@collection.owner, @collection))
-
   end
 
   def facets
@@ -158,7 +164,8 @@ class CollectionController < ApplicationController
 
     facet_ids = facets.pluck(:id)
 
-    @works = Work.joins(:work_facet).where('work_facets.id in (?)', facet_ids).paginate(page: params[:page], :per_page => 10)
+    @works = Work.joins(:work_facet).where('work_facets.id in (?)', facet_ids).paginate(page: params[:page],
+                                                                                        :per_page => 10)
     @search = WorkSearch.new(params[:page])
 
     render :plain => @works.to_json(:methods => [:thumbnail])
@@ -168,7 +175,6 @@ class CollectionController < ApplicationController
     # don't show popup again
     session[:new_mobile_user] = false
   end
-
 
   def show
     if current_user && CollectionBlock.find_by(collection_id: @collection.id, user_id: current_user.id).present?
@@ -199,18 +205,19 @@ class CollectionController < ApplicationController
           @works = @search_attempt.results.paginate(page: params[:page], per_page: 10)
 
         elsif (params[:works] == 'untranscribed')
-          ids = @collection.works.includes(:work_statistic).where.not(work_statistics: {complete: 100}).pluck(:id)
+          ids = @collection.works.includes(:work_statistic).where.not(work_statistics: { complete: 100 }).pluck(:id)
           @works = @collection.works.order_by_incomplete.where(id: ids).paginate(page: params[:page], per_page: 10)
-          #show all works
+          # show all works
         elsif (params[:works] == 'show')
-          @works = @collection.works.joins(:work_statistic).reorder(order_clause).paginate(page: params[:page], per_page: 10)
-          #hide incomplete works
+          @works = @collection.works.joins(:work_statistic).reorder(order_clause).paginate(page: params[:page],
+                                                                                           per_page: 10)
+          # hide incomplete works
         elsif params[:works] == 'hide' || (@collection.hide_completed)
-          #find ids of completed translation works
+          # find ids of completed translation works
           translation_ids = @collection.works.incomplete_translation.pluck(:id)
-          #find ids of completed transcription works
+          # find ids of completed transcription works
           transcription_ids = @collection.works.incomplete_transcription.pluck(:id)
-          #combine ids anduse to get works that aren't complete
+          # combine ids anduse to get works that aren't complete
           ids = translation_ids + transcription_ids
 
           if @collection.metadata_entry?
@@ -218,34 +225,42 @@ class CollectionController < ApplicationController
             ids += description_ids
           end
 
-          works = @collection.works.joins(:work_statistic).where(id: ids).reorder(order_clause).paginate(page: params[:page], per_page: 10)
+          works = @collection.works.joins(:work_statistic).where(id: ids).reorder(order_clause).paginate(
+            page: params[:page], per_page: 10
+          )
 
           if works.empty?
-            @works = @collection.works.joins(:work_statistic).reorder(order_clause).paginate(page: params[:page], per_page: 10)
+            @works = @collection.works.joins(:work_statistic).reorder(order_clause).paginate(page: params[:page],
+                                                                                             per_page: 10)
           else
             @works = works
           end
         else
-          @works = @collection.works.joins(:work_statistic).reorder(order_clause).paginate(page: params[:page], per_page: 10)
+          @works = @collection.works.joins(:work_statistic).reorder(order_clause).paginate(page: params[:page],
+                                                                                           per_page: 10)
         end
 
         if @collection.facets_enabled?
           # construct the search object from the parameters
           @search = WorkSearch.new(params)
-          @search.filter([:work, :collection_id]).value=@collection.id
+          @search.filter([:work, :collection_id]).value = @collection.id
           # the search results are WorkFacets, not works, so we need to fetch the works themselves
           facet_ids = @search.result.pluck(:id)
-          @works = @collection.works.joins(:work_facet).where('work_facets.id in (?)', facet_ids).includes(:work_facet).paginate(page: params[:page], :per_page => @per_page) unless params[:search].is_a?(String)
+          @works = @collection.works.joins(:work_facet).where('work_facets.id in (?)', facet_ids).includes(:work_facet).paginate(
+            page: params[:page], :per_page => @per_page
+          ) unless params[:search].is_a?(String)
 
           @date_ranges = []
           date_configs = @collection.facet_configs.where(input_type: 'date').where.not(order: nil).order(order: :asc)
           if date_configs.size > 0
             collection_facets = WorkFacet.joins(:work).where("works.collection_id = #{@collection.id}")
             date_configs.each do |facet_config|
-              facet_attr = [:d0,:d1,:d2][facet_config.order]
+              facet_attr = [:d0, :d1, :d2][facet_config.order]
 
-              selection_values = @works.map{|w| w.work_facet.send(facet_attr)}.reject{|v| v.nil?}
-              collection_values = collection_facets.map{|work_facet| work_facet.send(facet_attr)}.reject{|v| v.nil?}
+              selection_values = @works.map { |w| w.work_facet.send(facet_attr) }.reject { |v| v.nil? }
+              collection_values = collection_facets.map { |work_facet|
+                work_facet.send(facet_attr)
+              }.reject { |v| v.nil? }
 
               @date_ranges << {
                 :facet => facet_attr,
@@ -264,18 +279,19 @@ class CollectionController < ApplicationController
             end
             @works = @search_attempt.results.paginate(page: params[:page], per_page: 10)
           elsif (params[:works] == 'untranscribed')
-            ids = @collection.works.includes(:work_statistic).where.not(work_statistics: {complete: 100}).pluck(:id)
+            ids = @collection.works.includes(:work_statistic).where.not(work_statistics: { complete: 100 }).pluck(:id)
             @works = @collection.works.order_by_incomplete.where(id: ids).paginate(page: params[:page], per_page: 10)
-            #show all works
+            # show all works
           elsif (params[:works] == 'show')
-            @works = @collection.works.joins(:work_statistic).reorder(order_clause).paginate(page: params[:page], per_page: 10)
-            #hide incomplete works
+            @works = @collection.works.joins(:work_statistic).reorder(order_clause).paginate(page: params[:page],
+                                                                                             per_page: 10)
+            # hide incomplete works
           elsif params[:works] == 'hide' || (@collection.hide_completed)
-            #find ids of completed translation works
+            # find ids of completed translation works
             translation_ids = @collection.works.incomplete_translation.pluck(:id)
-            #find ids of completed transcription works
+            # find ids of completed transcription works
             transcription_ids = @collection.works.incomplete_transcription.pluck(:id)
-            #combine ids anduse to get works that aren't complete
+            # combine ids anduse to get works that aren't complete
             ids = translation_ids + transcription_ids
 
             if @collection.metadata_entry?
@@ -283,34 +299,42 @@ class CollectionController < ApplicationController
               ids += description_ids
             end
 
-            works = @collection.works.joins(:work_statistic).where(id: ids).reorder(order_clause).paginate(page: params[:page], per_page: 10)
+            works = @collection.works.joins(:work_statistic).where(id: ids).reorder(order_clause).paginate(
+              page: params[:page], per_page: 10
+            )
 
             if works.empty?
-              @works = @collection.works.joins(:work_statistic).reorder(order_clause).paginate(page: params[:page], per_page: 10)
+              @works = @collection.works.joins(:work_statistic).reorder(order_clause).paginate(page: params[:page],
+                                                                                               per_page: 10)
             else
               @works = works
             end
           else
-            @works = @collection.works.joins(:work_statistic).reorder(order_clause).paginate(page: params[:page], per_page: 10)
+            @works = @collection.works.joins(:work_statistic).reorder(order_clause).paginate(page: params[:page],
+                                                                                             per_page: 10)
           end
 
           if @collection.facets_enabled?
             # construct the search object from the parameters
             @search = WorkSearch.new(params)
-            @search.filter([:work, :collection_id]).value=@collection.id
+            @search.filter([:work, :collection_id]).value = @collection.id
             # the search results are WorkFacets, not works, so we need to fetch the works themselves
             facet_ids = @search.result.pluck(:id)
-            @works = @collection.works.joins(:work_facet).where('work_facets.id in (?)', facet_ids).includes(:work_facet).paginate(page: params[:page], :per_page => @per_page) unless params[:search].is_a?(String)
+            @works = @collection.works.joins(:work_facet).where('work_facets.id in (?)', facet_ids).includes(:work_facet).paginate(
+              page: params[:page], :per_page => @per_page
+            ) unless params[:search].is_a?(String)
 
             @date_ranges = []
             date_configs = @collection.facet_configs.where(input_type: 'date').where.not(order: nil).order(order: :asc)
             if date_configs.size > 0
               collection_facets = WorkFacet.joins(:work).where("works.collection_id = #{@collection.id}")
               date_configs.each do |facet_config|
-                facet_attr = [:d0,:d1,:d2][facet_config.order]
+                facet_attr = [:d0, :d1, :d2][facet_config.order]
 
-                selection_values = @works.map{|w| w.work_facet.send(facet_attr)}.reject{|v| v.nil?}
-                collection_values = collection_facets.map{|work_facet| work_facet.send(facet_attr)}.reject{|v| v.nil?}
+                selection_values = @works.map { |w| w.work_facet.send(facet_attr) }.reject { |v| v.nil? }
+                collection_values = collection_facets.map { |work_facet|
+                  work_facet.send(facet_attr)
+                }.reject { |v| v.nil? }
 
                 @date_ranges << {
                   :facet => facet_attr,
@@ -429,7 +453,8 @@ class CollectionController < ApplicationController
   end
 
   def restrict_transcribed
-    @collection.works.joins(:work_statistic).where('work_statistics.complete' => 100, :restrict_scribes => false).update_all(restrict_scribes: true)
+    @collection.works.joins(:work_statistic).where('work_statistics.complete' => 100,
+                                                   :restrict_scribes => false).update_all(restrict_scribes: true)
     redirect_back fallback_location: edit_privacy_collection_path(@collection.owner, @collection)
   end
 
@@ -458,7 +483,7 @@ class CollectionController < ApplicationController
   end
 
   def edit_tasks
-    @text_languages = ISO_639::ISO_639_2.map {|lang| [lang[3], lang[0]]}
+    @text_languages = ISO_639::ISO_639_2.map { |lang| [lang[3], lang[0]] }
     if @collection.field_based && !@collection.transcription_fields.present?
       flash.now[:info] = t('.alert')
     end
@@ -475,7 +500,8 @@ class CollectionController < ApplicationController
       params[:collection].delete(:subjects_enabled)
     end
     if collection_params[:data_entry_type].present?
-      params[:collection][:data_entry_type] = (collection_params[:data_entry_type] == '1') ? Collection::DataEntryType::TEXT_AND_METADATA : Collection::DataEntryType::TEXT_ONLY
+      params[:collection][:data_entry_type] =
+        (collection_params[:data_entry_type] == '1') ? Collection::DataEntryType::TEXT_AND_METADATA : Collection::DataEntryType::TEXT_ONLY
     end
 
     # Default slug to title if blank
@@ -551,13 +577,13 @@ class CollectionController < ApplicationController
     logger.debug("DEBUG collection1=#{@collection}")
     set_collection_for_work(@collection, @work)
     logger.debug("DEBUG collection2=#{@collection}")
-    #redirect_to action: 'edit', collection_slug: @collection.slug
+    # redirect_to action: 'edit', collection_slug: @collection.slug
     redirect_to action: 'edit', collection_id: @collection.id
   end
 
   def remove_work_from_collection
     set_collection_for_work(nil, @work)
-    #redirect_to action: 'edit', collection_slug: @collection.slug
+    # redirect_to action: 'edit', collection_slug: @collection.slug
     redirect_to action: 'edit', collection_id: @collection.id
   end
 
@@ -565,13 +591,13 @@ class CollectionController < ApplicationController
     @work = Work.new
     @work.collection = @collection
     @document_upload = DocumentUpload.new
-    @document_upload.collection=@collection
+    @document_upload.collection = @collection
     @universe_collections = ScCollection.universe
     @sc_collections = ScCollection.all
   end
 
   def contributors
-    #Get the start and end date params from date picker, if none, set defaults
+    # Get the start and end date params from date picker, if none, set defaults
     start_date = params[:start_date]
     end_date = params[:end_date]
 
@@ -598,7 +624,9 @@ class CollectionController < ApplicationController
 
   def works_list
     if params[:only_transcribed].present?
-      @works = @collection.works.joins(:work_statistic).where("work_statistics.transcribed_percentage < ?", 100).where("work_statistics.needs_review = ?", 0).order(:title)
+      @works = @collection.works.joins(:work_statistic).where("work_statistics.transcribed_percentage < ?", 100).where(
+        "work_statistics.needs_review = ?", 0
+      ).order(:title)
     else
       @works = @collection.works.includes(:work_statistic).order(:title)
     end
@@ -606,18 +634,23 @@ class CollectionController < ApplicationController
 
   def needs_transcription_pages
     work_ids = @collection.works.pluck(:id)
-    @review='transcription'
-    @pages = Page.where(work_id: work_ids).joins(:work).merge(Work.unrestricted).needs_transcription.order(work_id: :asc, position: :asc).paginate(page: params[:page], per_page: 10)
+    @review = 'transcription'
+    @pages = Page.where(work_id: work_ids).joins(:work).merge(Work.unrestricted).needs_transcription.order(work_id: :asc, position: :asc).paginate(
+      page: params[:page], per_page: 10
+    )
     @count = @pages.count
-    @incomplete_pages = Page.where(work_id: work_ids).joins(:work).merge(Work.unrestricted).needs_completion.order(work_id: :asc, position: :asc).paginate(page: params[:page], per_page: 10)
+    @incomplete_pages = Page.where(work_id: work_ids).joins(:work).merge(Work.unrestricted).needs_completion.order(work_id: :asc, position: :asc).paginate(
+      page: params[:page], per_page: 10
+    )
     @incomplete_count = @incomplete_pages.count
     @heading = t('.pages_need_transcription')
   end
 
   def needs_review_pages
     work_ids = @collection.works.pluck(:id)
-    @review='review'
-    @pages = Page.where(work_id: work_ids).joins(:work).merge(Work.unrestricted).review.paginate(page: params[:page], per_page: 10)
+    @review = 'review'
+    @pages = Page.where(work_id: work_ids).joins(:work).merge(Work.unrestricted).review.paginate(page: params[:page],
+                                                                                                 per_page: 10)
     @heading = t('.pages_need_review')
   end
 
@@ -713,7 +746,7 @@ class CollectionController < ApplicationController
   end
 
   def updated_fields_hash
-    @collection.changed.to_h {|field| [field, @collection.send(field)]}
+    @collection.changed.to_h { |field| [field, @collection.send(field)] }
   end
 
   def collection_params
@@ -767,5 +800,4 @@ class CollectionController < ApplicationController
   def permit_only_transcribed_works_flag
     params.permit(:only_transcribed)
   end
-
 end

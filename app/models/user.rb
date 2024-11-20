@@ -58,7 +58,7 @@ class User < ApplicationRecord
   devise :database_authenticatable, :registerable, :masqueradable,
          :recoverable, :rememberable, :trackable, :validatable,
          :omniauthable, :encryptable, :encryptor => :restful_authentication_sha1,
-         :omniauth_providers => [:google_oauth2,:saml]
+                                      :omniauth_providers => [:google_oauth2, :saml]
 
   include OwnerStatistic
   extend FriendlyId
@@ -104,16 +104,15 @@ class User < ApplicationRecord
                           :join_table => 'collection_reviewers',
                           :class_name => 'Collection')
 
-
   has_many :page_versions, -> { order(created_on: :desc) }
   has_many :article_versions, -> { order(created_on: :desc) }
   has_many :notes, -> { order(created_at: :desc) }
   has_many :deeds
 
   has_many :random_collections,   -> { unrestricted.has_intro_block.not_near_complete.not_empty.random_sample },
-    class_name: "Collection",  :foreign_key => "owner_user_id"
+           class_name: "Collection",  :foreign_key => "owner_user_id"
   has_many :random_document_sets, -> { unrestricted.has_intro_block.not_near_complete.not_empty.random_sample },
-    class_name: "DocumentSet", :foreign_key => "owner_user_id"
+           class_name: "DocumentSet", :foreign_key => "owner_user_id"
 
   has_many :metadata_description_versions, :dependent => :destroy
 
@@ -122,7 +121,7 @@ class User < ApplicationRecord
   scope :findaproject_owners, -> { owners.where.not(account_type: [nil, 'Trial', 'Staff']) }
   scope :paid_owners,      -> { non_trial_owners.where('paid_date > ?', Time.now) }
   scope :expired_owners,   -> { non_trial_owners.where('paid_date <= ?', Time.now) }
-  scope :active_mailers,   -> { where(activity_email: true)}
+  scope :active_mailers,   -> { where(activity_email: true) }
 
   validates :login, presence: true,
                     uniqueness: { case_sensitive: false },
@@ -145,7 +144,7 @@ class User < ApplicationRecord
     raw = PageBlock.where(view: "email_denylist").first
     if raw
       patterns = raw.html.split(/\s+/)
-      if patterns.detect {|pattern| self.email.match(/#{pattern}/) }
+      if patterns.detect { |pattern| self.email.match(/#{pattern}/) }
         errors.add(:email, 'error 38')
       end
     end
@@ -211,20 +210,20 @@ class User < ApplicationRecord
       email = data['email3'] unless data['email3'].blank?
       email = data['email2'] unless data['email2'].blank?
       email = data['email'] unless data['email'].blank?
-      login = email.gsub(/@.*/,'')
+      login = email.gsub(/@.*/, '')
       # avoid duplicate logins
       while User.where(login: login).exists? do
         login += '_'
       end
 
       user = User.create(
-         login: login,
-         email: email,
-         external_id: data['external_id'],
-         password: Devise.friendly_token[0,20],
-         display_name: data['name'],
-         real_name: data['name'],
-         sso_issuer: issuer
+        login: login,
+        email: email,
+        external_id: data['external_id'],
+        password: Devise.friendly_token[0, 20],
+        display_name: data['name'],
+        real_name: data['name'],
+        sso_issuer: issuer
       )
     end
 
@@ -256,7 +255,7 @@ class User < ApplicationRecord
   def can_review?(obj)
     # object could be a page or a collection
     if obj.is_a? Page
-      obj=obj.work.collection
+      obj = obj.work.collection
     end
 
     if obj.review_type == Collection::ReviewType::RESTRICTED
@@ -278,6 +277,7 @@ class User < ApplicationRecord
     if Collection == obj.class
       return self == obj.owner || obj.owners.include?(self)
     end
+
     if Work == obj.class
       if obj.collection
         return self == obj.collection.owner || obj.collection.owners.include?(self)
@@ -308,13 +308,13 @@ class User < ApplicationRecord
   end
 
   def collections
-    self.owned_collections + Collection.where(:owner_user_id => self.id)#.all
+    self.owned_collections + Collection.where(:owner_user_id => self.id) # .all
   end
 
   def self.find_first_by_auth_conditions(warden_conditions)
     conditions = warden_conditions.dup
     if login = conditions.delete(:login_id)
-      where(conditions).where(["login = :value OR lower(email) = lower(:value)", { :value => login}]).first
+      where(conditions).where(["login = :value OR lower(email) = lower(:value)", { :value => login }]).first
     else
       where(conditions).first
     end
@@ -328,9 +328,8 @@ class User < ApplicationRecord
     DocumentSet.where(owner_user_id: self.id).where(is_public: true)
   end
 
-
   def collections_and_document_sets
-    (collections + document_sets).sort_by {|obj| obj.title}
+    (collections + document_sets).sort_by { |obj| obj.title }
   end
 
   def visible_collections_and_document_sets(user)
@@ -344,16 +343,20 @@ class User < ApplicationRecord
     public_sets = self.unrestricted_document_sets
 
     if user
-      collaborator_collections = self.all_owner_collections.where(:restricted => true).joins(:collaborators).where("collection_collaborators.user_id = ?", user.id)
+      collaborator_collections = self.all_owner_collections.where(:restricted => true).joins(:collaborators).where(
+        "collection_collaborators.user_id = ?", user.id
+      )
       owned_collections = self.owned_collections
 
-      collaborator_sets = self.document_sets.where(:is_public => false).joins(:collaborators).where("document_set_collaborators.user_id = ?", user.id)
+      collaborator_sets = self.document_sets.where(:is_public => false).joins(:collaborators).where(
+        "document_set_collaborators.user_id = ?", user.id
+      )
       parent_collaborator_sets = []
-      collaborator_collections.each{|c| parent_collaborator_sets += c.document_sets}
+      collaborator_collections.each { |c| parent_collaborator_sets += c.document_sets }
 
-      (filtered_public_collections+collaborator_collections+owned_collections+public_sets+collaborator_sets+parent_collaborator_sets).uniq
+      (filtered_public_collections + collaborator_collections + owned_collections + public_sets + collaborator_sets + parent_collaborator_sets).uniq
     else
-      (filtered_public_collections+public_sets)
+      (filtered_public_collections + public_sets)
     end
   end
 
@@ -381,7 +384,7 @@ class User < ApplicationRecord
     self.page_versions.each { |version| version.expunge }
     self.article_versions.each { |version| version.expunge }
     self.deeds.each { |deed| deed.destroy }
-    self.destroy!  #need to decide whether to truly delete users or not
+    self.destroy! # need to decide whether to truly delete users or not
     self.flags.each { |flag| flag.revert_content! }
   end
 
@@ -402,7 +405,8 @@ class User < ApplicationRecord
 
   def self.search(search)
     wildcard = "%#{search}%"
-    where("display_name LIKE ? OR login LIKE ? OR real_name LIKE ? OR email LIKE ?", wildcard, wildcard, wildcard, wildcard)
+    where("display_name LIKE ? OR login LIKE ? OR real_name LIKE ? OR email LIKE ?", wildcard, wildcard, wildcard,
+          wildcard)
   end
 
   def create_notifications
@@ -418,12 +422,13 @@ class User < ApplicationRecord
       self.notification.save
     end
   end
+
   def join_collection(collection_id)
-      deed = Deed.new
-      deed.collection = Collection.find(collection_id)
-      deed.deed_type = DeedType::COLLECTION_JOINED
-      deed.user = self
-      deed.save!
+    deed = Deed.new
+    deed.collection = Collection.find(collection_id)
+    deed.deed_type = DeedType::COLLECTION_JOINED
+    deed.user = self
+    deed.save!
   end
 
   def downgrade
@@ -438,7 +443,6 @@ class User < ApplicationRecord
 
     self.save
   end
-
 
   # Generate a unique API key
   def self.generate_api_key
@@ -460,5 +464,4 @@ class User < ApplicationRecord
   def staff?
     self.account_type == 'Staff'
   end
-
 end

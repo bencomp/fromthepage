@@ -64,7 +64,6 @@ class EditorButton < ApplicationRecord
     Keys::UNDERLINE => ['<hi rend="underline">', '<u>']
   }
 
-
   def open_tag
     tags = BUTTON_MAP[self.key]
     if self.prefer_html && tags.size > 1
@@ -74,9 +73,8 @@ class EditorButton < ApplicationRecord
     end
   end
 
-
   def close_tag
-    ('</' + open_tag.sub('<', '').sub(/\s.*/, '').sub('>','') + '>').html_safe
+    ('</' + open_tag.sub('<', '').sub(/\s.*/, '').sub('>', '') + '>').html_safe
   end
 
   def cursor_offset
@@ -90,5 +88,4 @@ class EditorButton < ApplicationRecord
   def hotkey
     "Ctrl-E"
   end
-
 end

@@ -20,7 +20,6 @@ class ApplicationController < ActionController::Base
   around_action :check_deleted_articles
   around_action :switch_locale
 
-
   def check_deleted_articles
     if controller_name != 'display' && @collection && !@collection.subjects_disabled
       starting_article_count = @collection.articles.count
@@ -65,8 +64,8 @@ class ApplicationController < ActionController::Base
 
     # append region to locale
     related_locales = http_accept_language.user_preferred_languages.select do |loc|
-      loc.to_s.include?(locale.to_s) &&                              # is related to the chosen locale (is the locale, or is a regional version of it)
-      I18n.available_locales.map{|e| e.to_s}.include?(loc.to_s) # is an available locale
+      loc.to_s.include?(locale.to_s) && # is related to the chosen locale (is the locale, or is a regional version of it)
+        I18n.available_locales.map { |e| e.to_s }.include?(loc.to_s) # is an available locale
     end
 
     unless related_locales.empty?
@@ -87,16 +86,15 @@ class ApplicationController < ActionController::Base
     super || guest_user
   end
 
-  #find the guest user account if a guest user session is currently active
+  # find the guest user account if a guest user session is currently active
   def guest_user
     unless session[:guest_user_id].nil?
       User.where(id: session[:guest_user_id]).first
     end
   end
 
-  #when the user chooses to transcribe as guest, find guest user id or create new guest user
+  # when the user chooses to transcribe as guest, find guest user id or create new guest user
   def guest_transcription
-
     return head(:forbidden) unless GUEST_TRANSCRIPTION_ENABLED
 
     if check_recaptcha(model: @page, :attribute => :errors)
@@ -108,18 +106,17 @@ class ApplicationController < ActionController::Base
       flash.keep
       redirect_to :controller => 'transcribe', :action => 'guest', :page_id => @page.id
     end
-
   end
 
   def create_guest_user
-    user = User.new { |user| user.guest = true}
+    user = User.new { |user| user.guest = true }
     user.email = "guest_#{Time.now.to_i}#{rand(99)}@example.com"
     user.save(:validate => false)
     user
   end
 
   def remove_col_id
-    #if there's a col_id set, needs to be removed to prevent breadcrumb issues
+    # if there's a col_id set, needs to be removed to prevent breadcrumb issues
     if session[:col_id]
       session[:col_id] = nil
     end
@@ -194,15 +191,13 @@ class ApplicationController < ActionController::Base
       @collection_ids = params[:collection_ids]
     end
 
-
     if self.class.module_parent == Thredded && @collection
-      Thredded::Engine.routes.default_url_options = { user_slug: @collection.owner.slug, collection_id: @collection.slug }
+      Thredded::Engine.routes.default_url_options = { user_slug: @collection.owner.slug,
+                                                      collection_id: @collection.slug }
     else
       Thredded::Engine.routes.default_url_options = { user_slug: 'nil', collection_id: 'nil' }
     end
-
   end
-
 
   def set_friendly_collection(id)
     if Collection.friendly.exists?(id)
@@ -244,17 +239,18 @@ class ApplicationController < ActionController::Base
     page_blocks =
       PageBlock.where(controller: controller_name, view: action_name)
     page_blocks.each do |b|
-        if b && b.html
-          b.rendered_html = render_to_string(:inline => b.html)
-        else
-          b.rendered_html = ''
-        end
-        @html_blocks[b.tag] = b
+      if b && b.html
+        b.rendered_html = render_to_string(:inline => b.html)
+      else
+        b.rendered_html = ''
+      end
+      @html_blocks[b.tag] = b
     end
   end
 
   def authorize_collection
     return unless @collection
+
     if self.class.module_parent.name == 'Thredded'
       unless @collection.messageboards_enabled
         flash[:error] = t('message_boards_are_disabled', :project => @collection.title)
@@ -288,18 +284,21 @@ class ApplicationController < ActionController::Base
     end
   end
 
-
   def configure_permitted_parameters
-    devise_parameter_sanitizer.permit(:sign_up) { |u| u.permit(:login, :email, :password, :password_confirmation, :display_name, :owner, :paid_date, :activity_email) }
+    devise_parameter_sanitizer.permit(:sign_up) { |u|
+      u.permit(:login, :email, :password, :password_confirmation, :display_name, :owner, :paid_date, :activity_email)
+    }
     devise_parameter_sanitizer.permit(:sign_in) { |u| u.permit(:login_id, :login, :email, :password, :remember_me) }
-    devise_parameter_sanitizer.permit(:account_update) { |u| u.permit(:login, :email, :password, :current_password, :password_confirmation, :real_name) }
+    devise_parameter_sanitizer.permit(:account_update) { |u|
+      u.permit(:login, :email, :password, :current_password, :password_confirmation, :real_name)
+    }
   end
 
   # Redirect to admin or owner dashboard after sign in
-    # Always send admins to admin dashboard
-    # Everyone else should go back to where they came from if their previous page is set
-    # Otherwise owners should go to their dashboards
-    # And everyone else should go to user dashboard/watchlist
+  # Always send admins to admin dashboard
+  # Everyone else should go back to where they came from if their previous page is set
+  # Otherwise owners should go to their dashboards
+  # And everyone else should go to user dashboard/watchlist
   def after_sign_in_path_for(resource)
     if current_user.admin
       admin_path
@@ -325,104 +324,106 @@ class ApplicationController < ActionController::Base
   end
 
   # Wrapper around redirect_to for modal ajax forms
-  def ajax_redirect_to(options={}, response_status={})
+  def ajax_redirect_to(options = {}, response_status = {})
     if request.xhr?
       head :created, location: url_for(options)
     else
       redirect_to options, response_status
     end
   end
-
 end
 
-  def page_params(page)
-    if page.status_new?
-      if user_signed_in?
-        collection_transcribe_page_path(@collection.owner, @collection, page.work, page)
-      else
-        collection_guest_page_path(@collection.owner, @collection, page.work, page)
-      end
+def page_params(page)
+  if page.status_new?
+    if user_signed_in?
+      collection_transcribe_page_path(@collection.owner, @collection, page.work, page)
     else
-      collection_display_page_path(@collection.owner, @collection, page.work, page)
+      collection_guest_page_path(@collection.owner, @collection, page.work, page)
+    end
+  else
+    collection_display_page_path(@collection.owner, @collection, page.work, page)
+  end
+end
+
+def track_action
+  extras = {}
+  if @collection
+    if @collection.is_a? DocumentSet
+      extras[:document_set_id] = @collection.id
+      extras[:document_set_title] = @collection.title
+      extras[:collection_id] = @collection.collection.id
+      extras[:collection_title] = @collection.collection.title
+    else
+      extras[:collection_id] = @collection.id
+      extras[:collection_title] = @collection.title
     end
   end
+  extras[:work_id] = @work.id if @work
+  extras[:work_title] = @work.title if @work
+  extras[:page_id] = @page.id if @page
+  extras[:page_title] = @page.title if @page
+  extras[:article_id] = @article.id if @article
+  extras[:article_title] = @article.title if @article
+  ahoy.track("#{controller_name}##{action_name}", extras) unless action_name == "still_editing"
+end
 
-
-  def track_action
-    extras = {}
-    if @collection
-      if @collection.is_a? DocumentSet
-        extras[:document_set_id] = @collection.id
-        extras[:document_set_title] = @collection.title
-        extras[:collection_id] = @collection.collection.id
-        extras[:collection_title] = @collection.collection.title
-      else
-        extras[:collection_id] = @collection.id
-        extras[:collection_title] = @collection.title
-      end
-    end
-    extras[:work_id] = @work.id if @work
-    extras[:work_title] = @work.title if @work
-    extras[:page_id] = @page.id if @page
-    extras[:page_title] = @page.title if @page
-    extras[:article_id] = @article.id if @article
-    extras[:article_title] = @article.title if @article
-    ahoy.track("#{controller_name}##{action_name}", extras) unless action_name == "still_editing"
-  end
-
-
-  def check_api_access
-    if (defined? @collection) && @collection
-      if @collection.restricted && !@collection.api_access
-        if @api_user.nil? || !(@api_user.like_owner?(@collection))
-          render :status => 403, :plain => 'This collection is private.  The collection owner must enable API access to it or make it public for it to appear.'
-        end
-      end
-    end
-  end
-
-  def set_api_user
-    authenticate_with_http_token do |token, options|
-      @api_user = User.find_by(api_key: token)
-    end
-  end
-
-  def check_search_attempt
-    if session[:search_attempt_id]
-      your_profile = controller_name == "user" && @user == current_user
-      if ["dashboard", "static"].include?(controller_name) || your_profile
-        session[:search_attempt_id] = nil
+def check_api_access
+  if (defined? @collection) && @collection
+    if @collection.restricted && !@collection.api_access
+      if @api_user.nil? || !(@api_user.like_owner?(@collection))
+        render :status => 403,
+               :plain => 'This collection is private.  The collection owner must enable API access to it or make it public for it to appear.'
       end
     end
   end
+end
 
-  def update_search_attempt_contributions
-    if session[:search_attempt_id]
-      search_attempt = SearchAttempt.find(session[:search_attempt_id])
-      search_attempt.increment!(:contributions)
+def set_api_user
+  authenticate_with_http_token do |token, options|
+    @api_user = User.find_by(api_key: token)
+  end
+end
+
+def check_search_attempt
+  if session[:search_attempt_id]
+    your_profile = controller_name == "user" && @user == current_user
+    if ["dashboard", "static"].include?(controller_name) || your_profile
+      session[:search_attempt_id] = nil
     end
   end
+end
 
-  def update_search_attempt_user(user, session_var)
-    if session_var[:search_attempt_id]
-      search_attempt = SearchAttempt.find(session_var[:search_attempt_id])
-      search_attempt.user = user
-      search_attempt.owner = user.owner
-      search_attempt.save
-    end
+def update_search_attempt_contributions
+  if session[:search_attempt_id]
+    search_attempt = SearchAttempt.find(session[:search_attempt_id])
+    search_attempt.increment!(:contributions)
   end
+end
+
+def update_search_attempt_user(user, session_var)
+  if session_var[:search_attempt_id]
+    search_attempt = SearchAttempt.find(session_var[:search_attempt_id])
+    search_attempt.user = user
+    search_attempt.owner = user.owner
+    search_attempt.save
+  end
+end
 
 private
-  def store_current_location
-    store_location_for(:user, request.url)
-  end
-  def check_recaptcha(options)
-    return verify_recaptcha(options) if RECAPTCHA_ENABLED
-    true
-  end
-  def codespaces_environment?
-    Rails.env.development? && ENV["CODESPACES"] == "true"
-  end
+
+def store_current_location
+  store_location_for(:user, request.url)
+end
+
+def check_recaptcha(options)
+  return verify_recaptcha(options) if RECAPTCHA_ENABLED
+
+  true
+end
+
+def codespaces_environment?
+  Rails.env.development? && ENV["CODESPACES"] == "true"
+end
 # class ApplicationController < ActionController::Base
 #   protect_from_forgery
 # end

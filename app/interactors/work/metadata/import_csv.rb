@@ -61,7 +61,8 @@ class Work::Metadata::ImportCsv
         @rowset_errors << nil_work_row_error(work_id, work_title, work_filename)
       elsif work.collection != @collection
         @rowset_errors << {
-          error: I18n.t('metadata.import_csv.errors.not_in_collection', work_id: work_id, collection_title: @collection.title),
+          error: I18n.t('metadata.import_csv.errors.not_in_collection', work_id: work_id,
+                                                                        collection_title: @collection.title),
           work_id: work_id,
           title: work_title
         }

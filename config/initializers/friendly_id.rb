@@ -17,7 +17,7 @@ FriendlyId.defaults do |config|
   config.use :reserved
 
   config.reserved_words = %w(new edit index session login logout users admin
-    stylesheets assets javascripts images)
+                             stylesheets assets javascripts images)
 
   #  ## Friendly Finders
   #
@@ -38,7 +38,7 @@ FriendlyId.defaults do |config|
   # performance because it will avoid Rails-internal code that makes runtime
   # calls to `Module.extend`.
   #
-   config.use :finders
+  config.use :finders
   #
   # ## Slugs
   #

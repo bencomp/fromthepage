@@ -40,7 +40,8 @@ class UserMailer < ActionMailer::Base
   def collection_reviewer(user, obj)
     @user = user
     @collection = obj
-    mail to: @user.email, subject: "You've been added as a reviewer on #{@collection.title}", reply_to: @collection.owner.email
+    mail to: @user.email, subject: "You've been added as a reviewer on #{@collection.title}",
+         reply_to: @collection.owner.email
   end
 
   def collection_collaborator(user, obj)
@@ -143,7 +144,7 @@ class UserMailer < ActionMailer::Base
 
         works.select { |work| work.access_object(user) && work.user_can_transcribe?(user) }
       end
-    end #end class << self
+    end # end class << self
 
     def has_contributions?
       (
@@ -151,5 +152,5 @@ class UserMailer < ActionMailer::Base
         @active_note_pages
       ).any?
     end
-  end #end Activity
+  end # end Activity
 end

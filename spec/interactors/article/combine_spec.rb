@@ -4,12 +4,15 @@ describe Article::Combine do
   let(:user) { User.find_by(login: OWNER) }
   let!(:collection) { create(:collection, owner_user_id: user.id) }
   let!(:work) { create(:work, collection: collection, owner_user_id: user.id) }
-  let!(:from_related_page) { create(:page, work: work, source_text: '[[Duplicate]]', source_translation: '[[Duplicate]]') }
+  let!(:from_related_page) {
+    create(:page, work: work, source_text: '[[Duplicate]]', source_translation: '[[Duplicate]]')
+  }
   let!(:from_source_article) do
     create(:article, collection: collection.reload)
   end
   let!(:from_article) do
-    create(:article, title: 'Duplicate', source_text: 'appended text', collection: collection, pages: [from_related_page])
+    create(:article, title: 'Duplicate', source_text: 'appended text', collection: collection,
+                     pages: [from_related_page])
   end
   let!(:article_article_link) do
     create(:article_article_link, source_article: from_source_article, target_article: from_article)

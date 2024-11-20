@@ -16,9 +16,9 @@ module PrintHelper
       title = link.attributes['target_title']
       id = link.attributes['target_id']
       latex_link = link.children.to_s
-#      if print_footnote?(id, title, latex_link)
-#        latex_link += "\\footnote{#{title}}"
-#      end
+      #      if print_footnote?(id, title, latex_link)
+      #        latex_link += "\\footnote{#{title}}"
+      #      end
       latex_link += make_footnote_if_necessary(id, title, latex_link)
       link.replace_with(REXML::Text.new(latex_link))
     end
@@ -26,17 +26,16 @@ module PrintHelper
     page.elements.each("//p") do |para|
       latex << "\n\n"
       para.each do |e|
-        #p e
+        # p e
         latex << e.to_s
       end
     end
     # clear the footnote array in case render is called twice for debugging
     return latex
-
   end
 
-
   private
+
   def make_footnote_if_necessary(id, title, text)
     @printed_before ||= {}
     # have we printed the footnote before?
@@ -88,7 +87,7 @@ module PrintHelper
     article.elements.each("//p") do |para|
       latex << "\n \n \n"
       para.each do |e|
-        #p e
+        # p e
         latex << e.to_s
       end
     end

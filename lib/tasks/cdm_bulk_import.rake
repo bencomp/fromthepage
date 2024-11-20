@@ -1,9 +1,7 @@
-namespace :fromthepage do 
-
+namespace :fromthepage do
   desc "Import several CONTENTdm compound objects"
   task :bulk_import_cdm, [:cdm_bulk_import_id] => :environment do |t, args|
     bulk_import = CdmBulkImport.find(args.cdm_bulk_import_id.to_i)
-
 
     collection_or_set = bulk_import.collection_or_document_set
     if collection_or_set.is_a? DocumentSet
@@ -20,9 +18,9 @@ namespace :fromthepage do
     cdm_urls.each_with_index do |cdm_url, index|
       begin
         cdm_url.strip!
-        print "\n[#{index+1}/#{cdm_urls.count}] attempting #{cdm_url}\n"
+        print "\n[#{index + 1}/#{cdm_urls.count}] attempting #{cdm_url}\n"
         at_id = ContentdmTranslator.cdm_url_to_iiif(cdm_url)
-        print "\n[#{index+1}/#{cdm_urls.count}] importing #{at_id}\n"
+        print "\n[#{index + 1}/#{cdm_urls.count}] importing #{at_id}\n"
         sc_manifest = ScManifest.manifest_for_at_id(at_id)
         work = nil
         work = sc_manifest.convert_with_collection(bulk_import.user, collection)
@@ -40,11 +38,10 @@ namespace :fromthepage do
       rescue Exception => e
         puts "#{e.message}"
         errors.store(at_id, e.message)
-#        errors.store(at_id, e.backtrace.join("\n"))
+        #        errors.store(at_id, e.backtrace.join("\n"))
       end
     end
     puts "CONTENTdm bulk import has completed with these errors: \n#{errors.flatten.join("\n")}"
-
 
     if SMTP_ENABLED
       begin
@@ -57,8 +54,5 @@ namespace :fromthepage do
         print "SMTP Failed: Exception: #{e.message}"
       end
     end
-
-
   end
-  
 end

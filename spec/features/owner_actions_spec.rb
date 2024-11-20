@@ -102,7 +102,7 @@ describe "owner actions", :order => :defined do
     expect(page).to have_select('document_upload_collection_id', selected: col_title)
     sleep(2)
     expect(Collection.last.title).to eq col_title
-    #need to remove this collection to prevent conflicts in later tests
+    # need to remove this collection to prevent conflicts in later tests
     Collection.last.destroy
   end
 
@@ -200,7 +200,7 @@ describe "owner actions", :order => :defined do
     expect(page).to have_content("Work title")
     expect(page.find('.breadcrumbs')).to have_selector('a', text: col.title)
     select(@collection.title, :from => 'work_collection_id')
-    #reject the modal and get text
+    # reject the modal and get text
     message = page.dismiss_confirm do
       click_button('Save Changes')
     end
@@ -213,7 +213,7 @@ describe "owner actions", :order => :defined do
     work = col.works.second
     test_page = work.pages.first
 
-    #note: this is probably redundant, but it prevents failure from other tests
+    # note: this is probably redundant, but it prevents failure from other tests
     visit collection_transcribe_page_path(col.owner, col, work, test_page)
     fill_in_editor_field "[[Switzerland]]"
     find('#save_button_top').click
@@ -224,10 +224,10 @@ describe "owner actions", :order => :defined do
     expect(page.find('.breadcrumbs')).to have_selector('a', text: col.title)
     select(@collection.title, :from => 'work_collection_id')
     click_button('Save Changes')
-    #the modal is silently accepted by default
+    # the modal is silently accepted by default
     expect(Work.find_by(id: work.id).collection).not_to eq col
     expect(Work.find_by(id: work.id).collection).to eq @collection
-    #check the links
+    # check the links
     expect(PageArticleLink.where(page_id: work.pages.ids)).to be_empty
     test_page2 = Page.find_by(id: test_page.id)
     expect(test_page2.source_text).not_to have_content('[[')
@@ -275,9 +275,9 @@ describe "owner actions", :order => :defined do
   it "checks rtl transcription page views" do
     rtl_page = @rtl_collection.works.first.pages.first
     visit collection_transcribe_page_path(@rtl_collection.owner, @rtl_collection, rtl_page.work, rtl_page)
-    #check transcription page direction
+    # check transcription page direction
     expect(page.find('.page-editarea')[:dir]).to eq 'rtl'
-    #check overview page direction
+    # check overview page direction
     page.find('.tabs').click_link('Overview')
     expect(page.find('.page-preview')[:dir]).to eq 'rtl'
   end
@@ -363,6 +363,5 @@ describe "owner actions", :order => :defined do
       expect(page).to have_content("Letters from America")
       expect(page).to have_content("Science Archives")
     end
-
   end
 end

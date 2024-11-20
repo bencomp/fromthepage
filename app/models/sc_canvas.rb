@@ -30,8 +30,8 @@ class ScCanvas < ApplicationRecord
 
   def thumbnail_url
     if sc_service_id
-      service_id = sc_service_id.sub(/\/$/,'')
-      if sc_service_context ==  "http://iiif.io/api/image/1/context.json"
+      service_id = sc_service_id.sub(/\/$/, '')
+      if sc_service_context == "http://iiif.io/api/image/1/context.json"
         "#{service_id}/full/100,/0/native.jpg"
       else
         "#{service_id}/full/100,/0/default.jpg"
@@ -48,7 +48,6 @@ class ScCanvas < ApplicationRecord
       sc_resource_id
     end
   end
-
 
   def transcript_annotations
     return nil unless self.annotations
@@ -86,5 +85,4 @@ class ScCanvas < ApplicationRecord
     end
     transcript
   end
-
 end

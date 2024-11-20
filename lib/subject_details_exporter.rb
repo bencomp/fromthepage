@@ -3,7 +3,7 @@ module SubjectDetailsExporter
     include Rails.application.routes.url_helpers
 
     def initialize(collection)
-      @collection=collection
+      @collection = collection
       @subjects = collection.articles.includes(:categories, :page_article_links).order('articles.title')
       @headers = [
         'Title',
@@ -12,14 +12,14 @@ module SubjectDetailsExporter
         'Subject URI',
         'Latitude',
         'Longitude',
-        'Article Length (Words)', 
-        'Article Length (Characters)', 
+        'Article Length (Words)',
+        'Article Length (Characters)',
         'Article Text',
         'Number Occurrences',
         'Origin',
         'Created',
         'Category_Hierarchy'
-      ]  # research helpers may follow
+      ] # research helpers may follow
     end
 
     def export
@@ -31,7 +31,8 @@ module SubjectDetailsExporter
           row << subject.title
           row << subject.uri
           row << subject.categories.map { |category| category.title }.join("; ")
-          row << Rails.application.routes.url_helpers.collection_article_show_url(@collection.owner, @collection, subject.id)
+          row << Rails.application.routes.url_helpers.collection_article_show_url(@collection.owner, @collection,
+                                                                                  subject.id)
           row << subject.latitude
           row << subject.longitude
           row << subject.source_text.split(/\s/).count
@@ -48,6 +49,5 @@ module SubjectDetailsExporter
 
       csv_string
     end
-
   end
 end

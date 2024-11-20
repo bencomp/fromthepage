@@ -1,7 +1,6 @@
 require 'spec_helper'
 
 describe "uploads data for collections", :order => :defined do
-
   before :all do
     @owner = User.find_by(login: OWNER)
     @collections = @owner.all_owner_collections
@@ -62,7 +61,7 @@ describe "uploads data for collections", :order => :defined do
   end
 
   it "imports IIIF manifests", :js => true do
-    #import a manifest for test data
+    # import a manifest for test data
     VCR.use_cassette('iiif/imports_iiif_manifests', record: :new_episodes) do
       visit dashboard_owner_path
       page.find('.tabs').click_link("Start A Project")
@@ -78,7 +77,7 @@ describe "uploads data for collections", :order => :defined do
       works_count = Work.all.count
       page.find('.tabs').click_link("Start A Project")
       page.find(:css, "#import-iiif-manifest").click
-      #this manifest has a very long title
+      # this manifest has a very long title
       page.fill_in 'at_id', with: "https://data.ucd.ie/api/img/manifests/ivrla:2654"
       find_button('iiif_import').click
       expect(page).to have_content("Metadata")
@@ -124,7 +123,7 @@ describe "uploads data for collections", :order => :defined do
     work = Work.find(work.id)
     expect(work.work_statistic[:total_pages]).to eq 2
     expect(page).to have_content("Create Empty Work")
-    #testing the cancel button involves ajax
+    # testing the cancel button involves ajax
   end
 
   it "adds new document sets", js: true do
@@ -147,7 +146,7 @@ describe "uploads data for collections", :order => :defined do
     expect(page.current_path).to eq collection_settings_path(@owner, DocumentSet.last)
     expect(page).to have_content("Manage Works")
     expect(page.find('h1')).to have_content("Test Document Set 1")
-    #add a work - has to be done manually b/c it's jquery
+    # add a work - has to be done manually b/c it's jquery
     id = @set_collection.works.second.id
     DocumentSet.last.work_ids = id
     DocumentSet.last.save!

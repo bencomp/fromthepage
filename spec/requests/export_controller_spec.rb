@@ -17,7 +17,7 @@ describe ExportController do
   end
   let!(:page) do
     create(:page, work: work, source_text: source_text, xml_text: xml_text, search_text: 'Search text',
-      status: :transcribed)
+                  status: :transcribed)
   end
 
   describe '#index' do

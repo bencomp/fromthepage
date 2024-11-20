@@ -3,26 +3,27 @@ namespace :fromthepage do
   task :weekly_transcriber_cohort => :environment do
     # generate a csv file of users who signed up in the last week and write it out to a temporary file
     target_actions = AhoyActivitySummary::WEEKLY_TRANSCRIBER_COHORT_TARGET_ACTIONS
-    TRANSCRIBER_TEMP_FILE='/tmp/transcriber_conversion_cohorts.csv'
-    week_cohorts=[]
-    current_day=Date.new(2023,2,12)
-    while current_day+1.week < Date.today
+    TRANSCRIBER_TEMP_FILE = '/tmp/transcriber_conversion_cohorts.csv'
+    week_cohorts = []
+    current_day = Date.new(2023, 2, 12)
+    while current_day + 1.week < Date.today
       week_cohorts << current_day
-      current_day=current_day+1.week
+      current_day = current_day + 1.week
     end
 
     f = File.open(TRANSCRIBER_TEMP_FILE, 'w+')
     f.print("Start Date\tLanding Pages\tLanding to Signup Screen %\tSignup Screen Views\tSignup Screen to Account %\tAccount Creations\tAccount to Transcribe Screen %\tTranscribe Screen\tPage Saved %\tSave Transcription\tAccount Created to Page Transcribed %\tAccount Creation to First Page Transcribed (median minutes)\n")
     action_count = nil
     week_cohorts.each do |start_day|
-      end_day = start_day+1.week
+      end_day = start_day + 1.week
       f.print("#{start_day}\t")
       previous_visits = nil
-      previous_actions=nil
+      previous_actions = nil
       registrations_create_count = nil
       target_actions.each do |action|
         if previous_visits
-          visits = Ahoy::Event.where(time: start_day..end_day, name: action, visit_id: previous_visits).pluck(:visit_id).uniq
+          visits = Ahoy::Event.where(time: start_day..end_day, name: action,
+                                     visit_id: previous_visits).pluck(:visit_id).uniq
           action_count = visits.count
           previous_visits = visits
         else
@@ -33,7 +34,7 @@ namespace :fromthepage do
         end
 
         if previous_actions
-          pct = (action_count.to_f/previous_actions).round(4)
+          pct = (action_count.to_f / previous_actions).round(4)
           f.print("#{pct}\t")
         end
         f.print("#{action_count}\t")
@@ -42,13 +43,12 @@ namespace :fromthepage do
         if action == 'registrations#create'
           registrations_create_count = action_count
         end
-        previous_actions=action_count
+        previous_actions = action_count
       end
 
       # Account Created to Page Transcribed %
-      pct = (action_count.to_f/registrations_create_count).round(4)
+      pct = (action_count.to_f / registrations_create_count).round(4)
       f.print("#{pct}\t")
-
 
       # Account Creation to First Page Transcribed (median)
 
@@ -60,13 +60,12 @@ namespace :fromthepage do
         first_contribution_date = user.deeds.where(deed_type: DeedType.collection_edits).minimum(:created_at)
         durations_to_first_transcription << first_contribution_date - user.created_at unless first_contribution_date.nil?
       end
-      median_ttfpt = durations_to_first_transcription.sort[durations_to_first_transcription.count/2]
+      median_ttfpt = durations_to_first_transcription.sort[durations_to_first_transcription.count / 2]
       if median_ttfpt
-        f.print("#{median_ttfpt/60}\t")
+        f.print("#{median_ttfpt / 60}\t")
       else
         f.print("\t")
       end
-
 
       f.print("\n")
     end
@@ -80,6 +79,5 @@ namespace :fromthepage do
         print "SMTP Failed: Exception: #{e.message} \n"
       end
     end
-
   end
 end

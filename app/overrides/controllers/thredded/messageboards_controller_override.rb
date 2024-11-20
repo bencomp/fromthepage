@@ -1,5 +1,4 @@
 Thredded::MessageboardsController.class_eval do
-
   def create
     @new_messageboard = Thredded::Messageboard.new(messageboard_params)
     authorize_creating @new_messageboard

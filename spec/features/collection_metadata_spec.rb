@@ -158,8 +158,8 @@ describe "collection metadata", :order => :defined do
 
   it "should not be available/visible for the Individual Researcher plan", js: true do
     logout
-    old_account_type=@user.account_type
-    @user.account_type='Individual Researcher'
+    old_account_type = @user.account_type
+    @user.account_type = 'Individual Researcher'
     @user.save
     login_as @user
     c = Collection.where(title: "ladi").first
@@ -168,7 +168,7 @@ describe "collection metadata", :order => :defined do
     expect(page).to have_field("Enable metadata facets", disabled: true)
     expect(page.find_link("Edit Facets")).to match_css('[disabled]')
     expect(page).to have_content("Not available for researcher accounts.")
-    @user.account_type=old_account_type
+    @user.account_type = old_account_type
     @user.save
   end
 

@@ -1,6 +1,6 @@
 namespace :fromthepage do
   desc "Cleans old bulk exports"
-  task :clean_bulk_exports, [:days_old] => :environment do |t,args|
+  task :clean_bulk_exports, [:days_old] => :environment do |t, args|
     days_old = args.days_old.to_i
     BulkExport.where("created_at < ?", Time.now - days_old.days).each do |export|
       export.clean_zip_file
@@ -8,7 +8,7 @@ namespace :fromthepage do
   end
 
   desc "Process a bulk export"
-  task :process_bulk_export, [:bulk_export_id] => :environment do |t,args|
+  task :process_bulk_export, [:bulk_export_id] => :environment do |t, args|
     require "#{Rails.root}/app/helpers/error_helper"
     include ErrorHelper
     include Rails.application.routes.url_helpers
@@ -30,7 +30,6 @@ namespace :fromthepage do
     bulk_export.status = :finished
     bulk_export.save
 
-
     if SMTP_ENABLED
       begin
         UserMailer.bulk_export_finished(bulk_export).deliver!
@@ -39,5 +38,4 @@ namespace :fromthepage do
       end
     end
   end
-
 end

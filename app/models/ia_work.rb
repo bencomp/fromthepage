@@ -50,7 +50,7 @@ class IaWork < ApplicationRecord
 
   def self.refresh_server(book_id)
     # first get the call the location API and parse that document
-    api_url = 'http://www.archive.org/services/find_file.php?file='+book_id
+    api_url = 'http://www.archive.org/services/find_file.php?file=' + book_id
     logger.debug(api_url)
     loc_doc = Nokogiri::HTML(URI.open(api_url))
     location = loc_doc.search('results').first
@@ -58,7 +58,7 @@ class IaWork < ApplicationRecord
     dir = location['dir']
     logger.debug "DEBUG Server=#{server}"
     logger.debug "DEBUG Dir=#{dir}"
-    return {:server => server, :ia_path => dir}
+    return { :server => server, :ia_path => dir }
   end
 
   def zip_file
@@ -107,7 +107,7 @@ class IaWork < ApplicationRecord
     if self.use_ocr
       work.ocr_correction = true
     end
-    work.slug=self.book_id
+    work.slug = self.book_id
     work.save!
 
     self.ia_leaves.each do |leaf|
@@ -117,7 +117,7 @@ class IaWork < ApplicationRecord
       page.base_width = leaf.page_w
       page.title = leaf.page_number
       page.source_text = leaf.ocr_text if self.use_ocr
-      work.pages << page #necessary to make acts_as_list work here
+      work.pages << page # necessary to make acts_as_list work here
       work.save!
 
       leaf.page_id = page.id
@@ -132,7 +132,7 @@ class IaWork < ApplicationRecord
   end
 
   def ingest_work(id)
-    #find the length of the description column
+    # find the length of the description column
     limit = (IaWork.columns_hash['description'].limit)
     loc_doc = fetch_loc_doc(id)
     location = loc_doc.search('results').first
@@ -142,16 +142,16 @@ class IaWork < ApplicationRecord
     self.server = server
     self.ia_path = dir
     self.book_id = loc_doc.search('identifier').text
-    self[:title] = loc_doc.search('title').text            #work title
-    self[:creator] = loc_doc.search('creator').map{|e| e.text}.join('; ')       #work author
-    self[:collection] = loc_doc.search('collection').text   #?
-    #description is truncated so it isn't too long for the description column
+    self[:title] = loc_doc.search('title').text # work title
+    self[:creator] = loc_doc.search('creator').map { |e| e.text }.join('; ') # work author
+    self[:collection] = loc_doc.search('collection').text # ?
+    # description is truncated so it isn't too long for the description column
     if loc_doc.search('abstract').blank?
-      self[:description] = loc_doc.search('description').text.truncate(limit) #description
+      self[:description] = loc_doc.search('description').text.truncate(limit) # description
     else
-      self[:description] = loc_doc.search('abstract').text.truncate(limit) #description
+      self[:description] = loc_doc.search('abstract').text.truncate(limit) # description
     end
-    self[:notes] = loc_doc.search('notes').text             #physical description
+    self[:notes] = loc_doc.search('notes').text # physical description
     self[:image_count] = loc_doc.search('imagecount').text
 
     image_format, archive_format = formats_from_loc(loc_doc)
@@ -220,10 +220,9 @@ class IaWork < ApplicationRecord
 
     leaf_objects = djvu_doc.search('OBJECT')
     leaf_objects.each do |e|
-
       page_id = e.search('PARAM[@name="PAGE"]').first['value']
-      page_id[/\w*_0*/]=""
-      page_id[/\.djvu/]=''
+      page_id[/\w*_0*/] = ""
+      page_id[/\.djvu/] = ''
       logger.debug(page_id)
       # there may well be an off-by-one error in the source.  I'm seeing page_id 7
       # correspond with leaf_id 6
@@ -235,7 +234,7 @@ class IaWork < ApplicationRecord
         line = e.search('LINE').last
       end
 
-      if(line)
+      if (line)
         ia_leaf = self.ia_leaves.find_by_leaf_number(leaf_number)
         ia_leaf.page_number = ocr_line_to_text(line).titleize
         ia_leaf.save!
@@ -253,13 +252,12 @@ class IaWork < ApplicationRecord
 
   def leaf_number_from_object(object_element)
     page_id = object_element.search('PARAM[@name="PAGE"]').first['value']
-    page_id[/\S*_0*/]=""
-    page_id[/\.djvu/]=''
+    page_id[/\S*_0*/] = ""
+    page_id[/\.djvu/] = ''
     logger.debug(page_id)
     # there may well be an off-by-one error in the source.  I'm seeing page_id 7
     # correspond with leaf_id 6
     page_id.to_i
-
   end
 
   def ocr_line_to_text(line)
@@ -279,7 +277,7 @@ class IaWork < ApplicationRecord
     loc_doc = fetch_loc_doc(self.book_id)
     scandata_file, djvu_file = files_from_loc(loc_doc)
 
-    djvu_url =  "http://#{self.server}#{self.ia_path}/#{URI.encode(djvu_file)}"
+    djvu_url = "http://#{self.server}#{self.ia_path}/#{URI.encode(djvu_file)}"
     logger.debug(djvu_url)
     djvu_doc = open_doc(djvu_url)
 
@@ -296,11 +294,12 @@ class IaWork < ApplicationRecord
     if locations.uniq == [nil]
       return ['jp2', 'zip']
     end
+
     # handle old upload format
     ARCHIVE_FORMATS.each do |aft|
       IMAGE_FORMATS.each do |ift|
         suffix = "#{ift}.#{aft}"
-        if locations.count { |l| l.end_with? suffix} > 0
+        if locations.count { |l| l.end_with? suffix } > 0
           return [ift, aft]
         end
       end
@@ -309,7 +308,7 @@ class IaWork < ApplicationRecord
 
   def fetch_loc_doc(id)
     # first get the call the location API and parse that document
-    api_url = 'http://www.archive.org/services/find_file.php?file='+id
+    api_url = 'http://www.archive.org/services/find_file.php?file=' + id
     logger.debug(api_url)
     loc_doc = open_doc(api_url)
     return loc_doc
@@ -318,17 +317,15 @@ class IaWork < ApplicationRecord
   def files_from_loc(loc_doc)
     formats = loc_doc.search('file').search('format')
 
-    scandata = formats.select{|e| e.inner_text=='Scandata'}.first.parent['name']
-    djvu = formats.select{|e| e.inner_text=='Djvu XML'}.first.parent['name']
-    zips = formats.select{|e| e.inner_text=='Single Page Processed JP2 ZIP'}
+    scandata = formats.select { |e| e.inner_text == 'Scandata' }.first.parent['name']
+    djvu = formats.select { |e| e.inner_text == 'Djvu XML' }.first.parent['name']
+    zips = formats.select { |e| e.inner_text == 'Single Page Processed JP2 ZIP' }
     if zips.size < 1
-      zips = formats.select{|e| e.inner_text=='Single Page Processed JP2 Tar'}
+      zips = formats.select { |e| e.inner_text == 'Single Page Processed JP2 Tar' }
     end
     if zips.size < 1
-      zips = formats.select{|e| e.inner_text=="Single Page Processed JPEG Tar"}
+      zips = formats.select { |e| e.inner_text == "Single Page Processed JPEG Tar" }
     end
-
-
 
     zip = zips.first.parent['name']
 

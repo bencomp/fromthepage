@@ -1,4 +1,3 @@
-
 require 'spec_helper'
 
 describe "Metadata Description" do
@@ -11,8 +10,6 @@ describe "Metadata Description" do
     login_as(@owner, :scope => :user)
     visit '/feature/description/enable'
   end
-
-
 
   # factory code from work spec
   # let(:work_no_ocr){ create(:work, owner_user_id: @owner.id, collection: collection, ocr_correction: false) }
@@ -38,7 +35,6 @@ describe "Metadata Description" do
     expect(button['disabled']).to eq('disabled')
     expect(@collection.data_entry_type).to eq(Collection::DataEntryType::TEXT_ONLY)
   end
-
 
   describe "Owner Flow" do
     before :each do
@@ -75,19 +71,16 @@ describe "Metadata Description" do
       expect(TranscriptionField.all.count).to eq old_field_count + 3
       expect(TranscriptionField.first.percentage).to eq 20
 
-
       # now check the field preview on the edit page
       visit collection_path(@owner, @collection)
       page.find('.tabs').click_link("Metadata Fields")
       expect(page.find('div.fields-preview')).to have_content("First metadata field")
       expect(page.find('div.fields-preview')).to have_content("Second metadata field")
       expect(page.find('div.fields-preview')).to have_content("Third metadata field")
-      #check field width for first field (set to 20%)
+      # check field width for first field (set to 20%)
       expect(page.find('div.fields-preview .field-wrapper:nth-child(1)')[:style]).to eq "width: 20%;"
-      #check field width for second field (not set)
+      # check field width for second field (not set)
       expect(page.find('div.fields-preview .field-wrapper:nth-child(2)')[:style]).not_to eq "width: 20%;"
     end
-
   end
 end
-

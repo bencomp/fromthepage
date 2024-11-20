@@ -1,5 +1,4 @@
 class PageVersionController < ApplicationController
-
   before_action :set_versions
 
   def set_versions
@@ -10,5 +9,4 @@ class PageVersionController < ApplicationController
   def list
     render 'show'
   end
-
 end

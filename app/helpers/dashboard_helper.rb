@@ -31,10 +31,10 @@ module DashboardHelper
 
   def time_spent_in_date_range(user_id, start_date, end_date)
     minutes_worked = minutes_worked_in_range(user_id, start_date, end_date)
-  
+
     formatted_time(minutes_worked)
   end
-  
+
   def minutes_worked_in_range(user_id, start_date, end_date)
     AhoyActivitySummary
       .where(user_id: user_id)
@@ -42,14 +42,15 @@ module DashboardHelper
       .where("date >= ? AND date <= ?", start_date, end_date)
       .sum(:minutes)
   end
-  
+
   def formatted_time(total_minutes)
     hours, minutes = total_minutes.divmod(60)
     "#{hours} hours and #{minutes} minutes"
   end
-private
 
-  KEYWORD_TAGS = {"Civil War and Reconstruction"=>
+  private
+
+  KEYWORD_TAGS = { "Civil War and Reconstruction" =>
   ["east-civil-war-letters",
    "the-papers-of-john-b-minor-1845-1893",
    "george-r-fairbanks-collection",
@@ -85,7 +86,7 @@ private
    "student-anti-slavery-rebellion-1835",
    "cwrgm-public",
    "cwgk-transcriptions"],
- "Correspondence"=>
+                   "Correspondence" =>
   ["east-civil-war-letters",
    "letters-to-from-samuel-kearsley-1825-1828",
    "may-wright-sewall-papers",
@@ -205,7 +206,7 @@ private
    "edward-stabler-letters",
    "kummer-family-letters",
    "frank-t-lea-letters"],
- "19th century"=>
+                   "19th century" =>
   ["east-civil-war-letters",
    "cecil-county-at-university-of-delaware",
    "c-s-peirce-manuscripts",
@@ -228,9 +229,9 @@ private
    "mount-auburn-cemetery",
    "thomas-brevard-notebook",
    "the-jenny-lind-collection"],
- "Disability and Illness"=>
+                   "Disability and Illness" =>
   ["east-civil-war-letters", "letters-from-the-hemingway-family-archive"],
- "Military"=>
+                   "Military" =>
   ["east-civil-war-letters",
    "zenas-matthews-1846-u-s-mexico-war-diary-and-service-papers",
    "waac-letters",
@@ -366,7 +367,7 @@ private
    "washington-county-va",
    "winchester-va",
    "culpeper-county-va"],
- "Diaries"=>
+                   "Diaries" =>
   ["jeremiah-white-graves-diaries",
    "cecil-county-at-university-of-delaware",
    "c-s-peirce-manuscripts",
@@ -454,7 +455,7 @@ private
    "journal-1892-1893",
    "journal-1893-1895",
    "innis-family-fonds"],
- "Financial "=>
+                   "Financial " =>
   ["jeremiah-white-graves-diaries",
    "stagville-accounts",
    "charles-barney-papers",
@@ -480,7 +481,7 @@ private
    "journal-1892-1893",
    "journal-1893-1895",
    "account-inventory-of-eudes-de-nevers"],
- "19th Century"=>
+                   "19th Century" =>
   ["jeremiah-white-graves-diaries",
    "letter-book-for-the-receiver-of-wrecks-at-kingston-upon-hull-england-1855-1861",
    "howitt-and-fison-papers",
@@ -575,7 +576,7 @@ private
    "founding-documents",
    "virginia-untold-registers-of-free-black-people",
    "edward-stabler-letters"],
- "Family Papers"=>
+                   "Family Papers" =>
   ["thomas-tolman-family-organization",
    "the-papers-of-julian-bond",
    "emilie-todd-helm-scrapbook",
@@ -608,10 +609,10 @@ private
    "woodruff-documents-crowdsourcing-instructions",
    "woodruff-new-documents-4-january-2022",
    "kummer-family-letters"],
- "Mexican-American War"=>
+                   "Mexican-American War" =>
   ["zenas-matthews-1846-u-s-mexico-war-diary-and-service-papers"],
- "Zines"=>["austin-fanzine-project"],
- "20th century "=>
+                   "Zines" => ["austin-fanzine-project"],
+                   "20th century " =>
   ["austin-fanzine-project",
    "may-wright-sewall-papers",
    "risd-library-special-collections-ruth-laxson-artist-book-archive",
@@ -679,7 +680,7 @@ private
    "high-point-schools-collection",
    "sandy-spring-community-council",
    "frank-t-lea-letters"],
- "Arts"=>
+                   "Arts" =>
   ["austin-fanzine-project",
    "risd-library-special-collections-ruth-laxson-artist-book-archive",
    "kzsu",
@@ -701,8 +702,8 @@ private
    "marian-anderson-notebooks-journals-and-diaries",
    "buildings-and-structures",
    "edward-stabler-letters"],
- "Philosophy"=>["c-s-peirce-manuscripts"],
- "Natural Sciences"=>
+                   "Philosophy" => ["c-s-peirce-manuscripts"],
+                   "Natural Sciences" =>
   ["transcribing-the-field-notes-of-the-museum-of-vertebrate-zoology",
    "lsjr",
    "kranzlin",
@@ -734,7 +735,7 @@ private
    "german",
    "asa-gray-correspondence-files-of-the-gray-herbarium",
    "horticulture"],
- "Field notes"=>
+                   "Field notes" =>
   ["transcribing-the-field-notes-of-the-museum-of-vertebrate-zoology",
    "kranzlin",
    "duchartre",
@@ -747,20 +748,20 @@ private
    "arnold-arboretum-horticultural-library-field-collection-books-veitch",
    "manasseh-cutler-papers",
    "stephen-elliott-1771-1830-papers"],
- "Family papers"=>["stagville-accounts", "leonidas-polk-family-papers"],
- "Slavery"=>
+                   "Family papers" => ["stagville-accounts", "leonidas-polk-family-papers"],
+                   "Slavery" =>
   ["stagville-accounts",
    "stephen-elliott-papers",
    "04850-ballard",
    "00908-massenburg",
    "01095-leak"],
- "Linguistics and Anthropology"=>
+                   "Linguistics and Anthropology" =>
   ["thornton-manuscripts",
    "jawi-transcription-project",
    "irish-dialect-archive-manuscript-collection",
    "early-american-shorthand",
    "first-nations-language-collection"],
- "Book History"=>
+                   "Book History" =>
   ["thornton-manuscripts",
    "jawi-transcription-project",
    "luke-wadding-papers",
@@ -811,9 +812,9 @@ private
    "wellcome-collection",
    "royal-college-of-physicians",
    "university-of-guelph"],
- "15th century"=>
+                   "15th century" =>
   ["thornton-manuscripts", "maps", "deifira-harvard-university"],
- "Women's History"=>
+                   "Women's History" =>
   ["waac-letters",
    "loreto-1916",
    "clelia-d-mosher-papers",
@@ -836,7 +837,7 @@ private
    "marian-anderson-correspondence",
    "marian-anderson-notebooks-journals-and-diaries",
    "innis-family-fonds"],
- "World War II"=>
+                   "World War II" =>
   ["waac-letters",
    "wwii",
    "mary-lesnett-letters",
@@ -860,7 +861,7 @@ private
    "world-war-ii-letters-v3",
    "00b-american-friends-service-committee-letters",
    "jewell-h-spears-wwii-collection"],
- "Literature"=>
+                   "Literature" =>
   ["the-james-malcolm-rymer-collection",
    "ucd-letters-71",
    "deciphering-dickens-iiif-test",
@@ -871,16 +872,16 @@ private
    "la-linda-poblana-zarzuela-en-dos-actos",
    "correspondence-volume-2-unpublished",
    "miles-franklin-papers"],
- "Women's history"=>
+                   "Women's history" =>
   ["may-wright-sewall-papers",
    "risd-library-special-collections-ruth-laxson-artist-book-archive"],
- "21st century"=>
+                   "21st century" =>
   ["risd-library-special-collections-ruth-laxson-artist-book-archive",
    "weiland",
    "sail",
    "the-theory-and-craft-of-digital-preservation",
    "david-c-driskell-papers"],
- "Indigenous History"=>
+                   "Indigenous History" =>
   ["letters-of-the-office-of-indian-affairs-1849-1880-california-superintendency",
    "howitt-and-fison-papers",
    "finding-aids",
@@ -890,16 +891,16 @@ private
    "greatbritainindiandept",
    "first-nations-language-collection",
    "level-2"],
- "Government records"=>
+                   "Government records" =>
   ["letters-of-the-office-of-indian-affairs-1849-1880-california-superintendency"],
- "Historic site"=>["1871-1900-yaquina-head-lighthouse-letter-books"],
- "Maritime"=>
+                   "Historic site" => ["1871-1900-yaquina-head-lighthouse-letter-books"],
+                   "Maritime" =>
   ["1871-1900-yaquina-head-lighthouse-letter-books",
    "letter-book-for-the-receiver-of-wrecks-at-kingston-upon-hull-england-1855-1861",
    "logs",
    "css-alabama-logbooks",
    "registers-of-certificates-of-service-masters-and-mates-foreign-trade"],
- "Logs"=>
+                   "Logs" =>
   ["1871-1900-yaquina-head-lighthouse-letter-books",
    "letter-book-for-the-receiver-of-wrecks-at-kingston-upon-hull-england-1855-1861",
    "indianapolis-public-schools",
@@ -929,7 +930,7 @@ private
    "the-domesday-book-of-queen-s-university",
    "queen-s-university-senate-minutes",
    "virginia-untold-registers-of-free-black-people"],
- "University"=>
+                   "University" =>
   ["ucd-letters-71",
    "ls",
    "student-life",
@@ -978,7 +979,7 @@ private
    "latin",
    "the-domesday-book-of-queen-s-university",
    "queen-s-university-senate-minutes"],
- "Imprisonment"=>
+                   "Imprisonment" =>
   ["death-in-venice",
    "waclaw-glouscek-papers-diary-1",
    "waclaw-glouscek-papers-diary-2",
@@ -994,7 +995,7 @@ private
    "department-of-corrections",
    "convict-leasing-project-coal-creek",
    "convict-leasing-project-other-stockades"],
- "Legal"=>
+                   "Legal" =>
   ["the-papers-of-roger-b-taney-1792-1820",
    "the-papers-of-solicitors-j-m-shugar-and-a-w-vaisey-1850-1914",
    "indianapolis-metropolitan-police-department",
@@ -1037,7 +1038,7 @@ private
    "business-correspondence",
    "founding-documents",
    "virginia-untold-bills-of-sale-and-deeds-set"],
- "18th century"=>
+                   "18th century" =>
   ["the-papers-of-roger-b-taney-1792-1820",
    "qutb-el-din-qirimi-18th-century",
    "cartas-dos-mercedarios-do-para",
@@ -1063,7 +1064,7 @@ private
    "doten-newspaper-clippings",
    "virginia-untold-registers-of-free-black-people",
    "edward-stabler-letters"],
- "slavery"=>
+                   "slavery" =>
   ["the-papers-of-roger-b-taney-1792-1820",
    "george-r-fairbanks-collection",
    "otey-james-harvey-papers",
@@ -1085,8 +1086,8 @@ private
    "convict-leasing-project-coal-creek",
    "convict-leasing-project-other-stockades",
    "virginia-untold-bills-of-sale-and-deeds-set"],
- "England"=>["the-papers-of-solicitors-j-m-shugar-and-a-w-vaisey-1850-1914"],
- "Newspapers"=>
+                   "England" => ["the-papers-of-solicitors-j-m-shugar-and-a-w-vaisey-1850-1914"],
+                   "Newspapers" =>
   ["indianapolis-metropolitan-police-department",
    "1906-earthquake",
    "vault-early-papers-of-the-university",
@@ -1099,7 +1100,7 @@ private
    "tn-newspapers",
    "tennessee-newspapers",
    "doten-newspaper-clippings"],
- "The Revolution and Early America"=>
+                   "The Revolution and Early America" =>
   ["practicing-law-in-the-early-american-republic",
    "germanaux",
    "carter-family-letterbook",
@@ -1121,7 +1122,7 @@ private
    "colonial-north-america-monroe-c-gutman-library",
    "greatbritainindiandept",
    "french"],
- "Vital Records"=>
+                   "Vital Records" =>
   ["stile-book-of-james-armor-c-1698",
    "marriage-certificates",
    "maryland-state-archives-1979-marriage-certificates",
@@ -1137,7 +1138,7 @@ private
    "marriage-records",
    "coming-soon-1981-december-certificates",
    "available-soon-1977-marriage-certificates"],
- "Education"=>
+                   "Education" =>
   ["indianapolis-public-schools",
    "fu-chun-yu-lab-notebooks",
    "paul-domke-s-trip-in-china",
@@ -1154,7 +1155,7 @@ private
    "fisher-family-collection",
    "high-point-schools-collection",
    "kummer-family-letters"],
- "Religion"=>
+                   "Religion" =>
   ["loreto-1916",
    "nano-nagle",
    "william-joseph-despain-missionary-journal",
@@ -1179,12 +1180,12 @@ private
    "woodruff-documents-crowdsourcing-instructions",
    "woodruff-new-documents-4-january-2022",
    "frank-t-lea-letters"],
- "Catholicism"=>
+                   "Catholicism" =>
   ["loreto-1916",
    "ecclesiastical-inventories",
    "cartas-dos-mercedarios-do-para",
    "mother-agnes-hazotte-correspondence"],
- "World War I"=>
+                   "World War I" =>
   ["wwi",
    "wwi-va-questionnaires",
    "indiana-wwi-service-record-cards",
@@ -1300,8 +1301,8 @@ private
    "washington-county-va",
    "winchester-va",
    "culpeper-county-va"],
- "Natural disasters"=>["1906-earthquake"],
- "Travel"=>
+                   "Natural disasters" => ["1906-earthquake"],
+                   "Travel" =>
   ["lsjr",
    "travel-perspectives",
    "dotendiaries",
@@ -1318,7 +1319,7 @@ private
    "arnold-arboretum-horticultural-library-account-ledgers",
    "pliny-fisk-journals-letters",
    "frank-t-lea-letters"],
- "Science"=>
+                   "Science" =>
   ["the-tesla-and-westinghouse-collection",
    "fu-chun-yu-lab-notebooks",
    "qnl-manuscripts",
@@ -1334,7 +1335,7 @@ private
    "arnold-arboretum-horticultural-library-field-collection-books",
    "arnold-arboretum-horticultural-library-field-collection-books-veitch",
    "french"],
- "technology"=>
+                   "technology" =>
   ["the-tesla-and-westinghouse-collection",
    "weiland",
    "sail",
@@ -1345,7 +1346,7 @@ private
    "the-theory-and-craft-of-digital-preservation",
    "houston-oil-company-of-texas",
    "john-davis-barnett-fonds"],
- "Health and Medicine"=>
+                   "Health and Medicine" =>
   ["clelia-d-mosher-papers",
    "caleb-edward-iddings-diaries",
    "nena-shelton-papers",
@@ -1358,7 +1359,7 @@ private
    "wellcome-collection",
    "royal-college-of-physicians",
    "university-of-guelph"],
- "Government Records"=>
+                   "Government Records" =>
   ["indiana-wwi-service-record-cards",
    "marriage-certificates",
    "city-of-seattle-records",
@@ -1496,14 +1497,14 @@ private
    "washington-county-va",
    "winchester-va",
    "culpeper-county-va"],
- "City Council"=>
+                   "City Council" =>
   ["charlottesville-city-council-minutes",
    "mayor-and-council-proceedings",
    "sandy-spring-community-council"],
- "women's history"=>["l-virginia-french-papers"],
- "correspondence"=>["l-virginia-french-papers", "world-war-i-collection"],
- "legal"=>["telfair-hodgson-papers"],
- "Judaica "=>
+                   "women's history" => ["l-virginia-french-papers"],
+                   "correspondence" => ["l-virginia-french-papers", "world-war-i-collection"],
+                   "legal" => ["telfair-hodgson-papers"],
+                   "Judaica " =>
   ["selma-engel-papers",
    "hebrew-manuscripts-playground",
    "ben-yehuda",
@@ -1513,7 +1514,7 @@ private
    "schutzbrief-or-safe-conduct-document-for-a-german-jew-1802",
    "maria-madi-diaries",
    "hebrew"],
- "Holocaust"=>
+                   "Holocaust" =>
   ["selma-engel-papers",
    "morris-and-lucy-breitbart-papers",
    "philip-d-vock-papers",
@@ -1526,11 +1527,11 @@ private
    "sarra-gimelshtein-diary",
    "alfred-rosenberg-diary",
    "maria-madi-diaries"],
- "Natural Disasters"=>
+                   "Natural Disasters" =>
   ["city-of-seattle-records",
    "monterey-bay-historical-phytoplankton-project",
    "monterey-bay-historical-zooplankton-project"],
- "Historic sites"=>
+                   "Historic sites" =>
   ["indianapolis-postcards",
    "horticultural-society",
    "mount-auburn-cemetery",
@@ -1549,20 +1550,20 @@ private
    "death-and-mourning",
    "family-correspondence",
    "founding-documents"],
- "Immigration and naturalization"=>
+                   "Immigration and naturalization" =>
   ["hans-vogel-diary",
    "lake-county-naturalization-records",
    "dane-nat-index",
    "vermillion-county-naturalization-records",
    "00b-american-friends-service-committee-letters",
    "eckley-oral-histories"],
- "Gold Rush"=>["dotendiaries", "thomas-gilman-collection", "henry-a-parker"],
- "Photographs and Images"=>
+                   "Gold Rush" => ["dotendiaries", "thomas-gilman-collection", "henry-a-parker"],
+                   "Photographs and Images" =>
   ["paul-domke-s-trip-in-china",
    "curtiss-wright",
    "african-american-world-war-ii-unit-photograph-1943",
    "ipr"],
- "17th century"=>
+                   "17th century" =>
   ["cartas-dos-mercedarios-do-para",
    "dorothea-rousby-cookery-book",
    "early-modern-recipe-books",
@@ -1571,7 +1572,7 @@ private
    "will-books",
    "wellcome-collection",
    "royal-college-of-physicians"],
- "African-American History "=>
+                   "African-American History " =>
   ["thomas-gilman-collection",
    "diaries-and-notebooks-of-marian-anderson",
    "papers-of-frederick-douglass-series-one-speeches-debates-and-interviews-volume-1-1841-1846",
@@ -1605,7 +1606,7 @@ private
    "marian-anderson-notebooks-journals-and-diaries",
    "virginia-untold-bills-of-sale-and-deeds-set",
    "virginia-untold-registers-of-free-black-people"],
- "Agriculture and Farming"=>
+                   "Agriculture and Farming" =>
   ["horticultural-society",
    "enterprise-farmers-club-minutes",
    "00133-cameron",
@@ -1616,7 +1617,7 @@ private
    "00908-massenburg",
    "philemon-t-black-journals",
    "robinson-family-papers"],
- "Society"=>
+                   "Society" =>
   ["horticultural-society",
    "mutual-improvement",
    "the-neighbors",
@@ -1632,7 +1633,7 @@ private
    "madison-friendship-lodge-grand-united-order-of-fellows-meeting-minutes",
    "tomato-club",
    "sandy-spring-community-council"],
- "Civil Rights"=>
+                   "Civil Rights" =>
   ["utah-women-suffrage",
    "sally-hemings-underground-newsletter",
    "speeches-debates-and-interviews-volume-4-1864-1880",
@@ -1645,7 +1646,7 @@ private
    "fullerh",
    "african-american-education-v3",
    "student-anti-slavery-rebellion-1835"],
- "Cookbooks"=>
+                   "Cookbooks" =>
   ["dorothea-rousby-cookery-book",
    "colonial-north-america-schlesinger-library",
    "the-countess-of-hohenlohe-s-recipe-book",
@@ -1657,7 +1658,7 @@ private
    "wellcome-collection",
    "royal-college-of-physicians",
    "university-of-guelph"],
- "Parks"=>
+                   "Parks" =>
   ["00133-cameron",
    "adams-family-papers",
    "hayden",
@@ -1668,12 +1669,12 @@ private
    "activist-agriculture",
    "lgbt",
    "ipr"],
- "Railroads"=>["cpr-lawsuits"],
- "12th century"=>
+                   "Railroads" => ["cpr-lawsuits"],
+                   "12th century" =>
   ["latin-paleography-workshop",
    "ms-tanner-190-fol-206v",
    "independent-crusaders-project"],
- "Labor"=>
+                   "Labor" =>
   ["activist-agriculture",
    "wam-manuscripts",
    "convict-leasing-project",
@@ -1684,33 +1685,32 @@ private
    "convict-leasing-project-good-time-releases",
    "convict-leasing-project-coal-creek",
    "convict-leasing-project-other-stockades"],
- "Book of Hours"=>["wam-manuscripts"],
- "LGBTQ"=>["lgbt", "finding-aids"],
- "16th century"=>
+                   "Book of Hours" => ["wam-manuscripts"],
+                   "LGBTQ" => ["lgbt", "finding-aids"],
+                   "16th century" =>
   ["cccc-ms-488-john-joscelyn-s-historiola-collegii-corporis-christi",
    "the-countess-of-hohenlohe-s-recipe-book",
    "early-modern-recipe-books"],
- "Technology"=>
+                   "Technology" =>
   ["colonial-north-america-collection-of-historical-scientific-instruments",
    "colonial-north-america-harvard-map-collection"],
- "US Presidents"=>
+                   "US Presidents" =>
   ["wwpl",
    "woodrow-wilson-papers",
    "virginia-letters-1816-and-1826-accession-10574"],
- "Federal Writers Project"=>["03709-federal-writers-project"],
- "Finding Aids and Catalogs "=>
+                   "Federal Writers Project" => ["03709-federal-writers-project"],
+                   "Finding Aids and Catalogs " =>
   ["lists", "mancroft-inventory-project", "index-transcription-project"],
- "14th century"=>["machaut-transcriptions"],
- "Latin America History"=>
+                   "14th century" => ["machaut-transcriptions"],
+                   "Latin America History" =>
   ["la-linda-poblana-zarzuela-en-dos-actos",
    "digitizing-peru-s-print-revolution"],
- "Oral History"=>["eckley-oral-histories"],
- "Mormonism"=>
+                   "Oral History" => ["eckley-oral-histories"],
+                   "Mormonism" =>
   ["woodruff-documents-crowdsourcing-instructions",
-   "woodruff-new-documents-4-january-2022"]}
+   "woodruff-new-documents-4-january-2022"] }
 
-
-  LOCATION_TAGS = {"United States"=>
+  LOCATION_TAGS = { "United States" =>
   ["east-civil-war-letters",
    "jeremiah-white-graves-diaries",
    "zenas-matthews-1846-u-s-mexico-war-diary-and-service-papers",
@@ -2140,7 +2140,7 @@ private
    "edward-stabler-letters",
    "kummer-family-letters",
    "frank-t-lea-letters"],
- "Virginia"=>
+                    "Virginia" =>
   ["east-civil-war-letters",
    "jeremiah-white-graves-diaries",
    "practicing-law-in-the-early-american-republic",
@@ -2272,7 +2272,7 @@ private
    "virginia-untold-bills-of-sale-and-deeds-set",
    "virginia-untold-registers-of-free-black-people",
    "culpeper-county-va"],
- "Texas"=>
+                    "Texas" =>
   ["zenas-matthews-1846-u-s-mexico-war-diary-and-service-papers",
    "austin-fanzine-project",
    "thomas-martin-diaries",
@@ -2280,7 +2280,7 @@ private
    "houston-oil-company-of-texas",
    "us-civil-war-letters-and-journals-at-rice-university",
    "pleasantville-community-images"],
- "California"=>
+                    "California" =>
   ["transcribing-the-field-notes-of-the-museum-of-vertebrate-zoology",
    "letters-of-the-office-of-indian-affairs-1849-1880-california-superintendency",
    "ls",
@@ -2311,7 +2311,7 @@ private
    "pacific-grove-retreat-association",
    "davidson-college-notebook",
    "symonds-notebooks-project"],
- "North Carolina"=>
+                    "North Carolina" =>
   ["stagville-accounts",
    "00133-cameron",
    "rare-and-unique-digital-collections",
@@ -2336,7 +2336,7 @@ private
    "tomato-club",
    "jewell-h-spears-wwii-collection",
    "high-point-schools-collection"],
- "England"=>
+                    "England" =>
   ["thornton-manuscripts",
    "letter-book-for-the-receiver-of-wrecks-at-kingston-upon-hull-england-1855-1861",
    "the-papers-of-solicitors-j-m-shugar-and-a-w-vaisey-1850-1914",
@@ -2355,14 +2355,14 @@ private
    "wellcome-collection",
    "royal-college-of-physicians",
    "university-of-guelph"],
- "Wisconsin"=>
+                    "Wisconsin" =>
   ["the-james-malcolm-rymer-collection",
    "mother-agnes-hazotte-correspondence",
    "dane-nat-index",
    "wisconsin-civil-war-diaries",
    "wisconsin-womens-history"],
- "Illinois"=>["letters-to-from-samuel-kearsley-1825-1828"],
- "Indiana"=>
+                    "Illinois" => ["letters-to-from-samuel-kearsley-1825-1828"],
+                    "Indiana" =>
   ["may-wright-sewall-papers",
    "indianapolis-metropolitan-police-department",
    "indianapolis-public-schools",
@@ -2373,12 +2373,12 @@ private
    "indiana-deceased-world-war-ii-veterans",
    "jeffersonville-land-office-receipts",
    "ipr"],
- "Rhode Island"=>
+                    "Rhode Island" =>
   ["risd-library-special-collections-ruth-laxson-artist-book-archive",
    "logs",
    "newsm-steam-library"],
- "Oregon"=>["1871-1900-yaquina-head-lighthouse-letter-books"],
- "Ireland"=>
+                    "Oregon" => ["1871-1900-yaquina-head-lighthouse-letter-books"],
+                    "Ireland" =>
   ["ucd-letters-71",
    "irish-dialect-archive-manuscript-collection",
    "luke-wadding-papers",
@@ -2390,7 +2390,7 @@ private
    "nano-nagle",
    "douglas-hyde-memoir-and-postcards",
    "correspondence-of-roger-casement-and-robert-donovan-1905-1906"],
- "Italy"=>
+                    "Italy" =>
   ["death-in-venice",
    "dalme-italian-sources",
    "lapo-di-castiglionchio",
@@ -2400,7 +2400,7 @@ private
    "florentine-inventories-dalme",
    "firenze-notarile-antecosimiano-679-b32673ad-d4f5-4c97-8131-8655cb34d260",
    "deifira-harvard-university"],
- "Maryland"=>
+                    "Maryland" =>
   ["the-papers-of-roger-b-taney-1792-1820",
    "helen-coelho-fries",
    "marriage-certificates",
@@ -2430,8 +2430,8 @@ private
    "edward-stabler-letters",
    "kummer-family-letters",
    "frank-t-lea-letters"],
- "Scotland"=>["stile-book-of-james-armor-c-1698"],
- "Australia"=>
+                    "Scotland" => ["stile-book-of-james-armor-c-1698"],
+                    "Australia" =>
   ["howitt-and-fison-papers",
    "records-of-male-convicts-transported-to-van-diemen-s-land-1820-1844-and-female-convicts-1844-1852",
    "francis-forbes-correspondence-relating-to-the-sudds-thompson-and-robison-cases-ca-1824-1830",
@@ -2440,8 +2440,8 @@ private
    "first-nations-language-collection",
    "marriage-records",
    "william-marsh-rice-business-and-estate-ledgers"],
- "New Jersey"=>["the-tesla-and-westinghouse-collection", "adams"],
- "Tennessee"=>
+                    "New Jersey" => ["the-tesla-and-westinghouse-collection", "adams"],
+                    "Tennessee" =>
   ["george-r-fairbanks-collection",
    "otey-james-harvey-papers",
    "stephen-elliott-papers",
@@ -2473,9 +2473,9 @@ private
    "world-war-i-letters-v3",
    "convict-leasing-project-coal-creek",
    "convict-leasing-project-other-stockades"],
- "District of Columbia"=>["margaret-bayard-smith-digital-edition"],
- "Michigan"=>["herbert-h-dow-2000-addition", "fullerh"],
- "Canada"=>
+                    "District of Columbia" => ["margaret-bayard-smith-digital-edition"],
+                    "Michigan" => ["herbert-h-dow-2000-addition", "fullerh"],
+                    "Canada" =>
   ["38th-cef-war-diary",
    "colonial-north-america-houghton-library",
    "sc62-samuel-wilmot-fonds-letterbook-1886-1889",
@@ -2495,8 +2495,8 @@ private
    "bishop-hellmuth-library-catalogue",
    "the-domesday-book-of-queen-s-university",
    "queen-s-university-senate-minutes"],
- "Israel"=>["ben-yehuda"],
- "Kentucky"=>
+                    "Israel" => ["ben-yehuda"],
+                    "Kentucky" =>
   ["emilie-todd-helm-scrapbook",
    "prall-family-bible-records",
    "henry-lane-stone-civil-war-diary",
@@ -2509,30 +2509,30 @@ private
    "kentucky-educator-resources",
    "united-states-colored-troops-muster-and-descriptive-roll-for-kentucky-the-7th-8th-and-9th-districts",
    "cwgk-transcriptions"],
- "Nevada"=>
+                    "Nevada" =>
   ["dotendiaries",
    "summer-school-diaries",
    "reno-divorce-correspondence",
    "wcr-inventory",
    "mighels",
    "doten-newspaper-clippings"],
- "China"=>
+                    "China" =>
   ["paul-domke-s-trip-in-china",
    "dispatches-from-china-letters-and-diaries-of-stuart-hummel-families",
    "arnold-arboretum-horticultural-library-botanical-exploration-papers"],
- "Poland"=>["morris-and-lucy-breitbart-papers"],
- "France"=>
+                    "Poland" => ["morris-and-lucy-breitbart-papers"],
+                    "France" =>
   ["ecclesiastical-inventories",
    "image-du-monde-en-vers",
    "regime-du-corps",
    "rutebeuf-poems",
    "livre-des-assises-de-la-baisse-court-c-est-de-la-court-dou-visconte-dou-reaume-de-chipre-bsb-cod-gall-51"],
- "New York"=>
+                    "New York" =>
   ["jesse-townsend-sermons-1807-1819",
    "wnc-talks",
    "public-universal-friend-collection",
    "account-books"],
- "Ohio"=>
+                    "Ohio" =>
   ["rotch-wales-collection",
    "franklin-county-jail-register",
    "franklin-county-jail-register-d5c09263-2c52-45f3-b486-8b2c7eb85e9d",
@@ -2540,8 +2540,8 @@ private
    "farfel-research-notebooks",
    "los-amigos-records-1947-1952",
    "northeast-ohio-and-the-civil-war"],
- "Qatar"=>["qnl-manuscripts"],
- "Utah"=>
+                    "Qatar" => ["qnl-manuscripts"],
+                    "Utah" =>
   ["johndlee",
    "utah-women-suffrage",
    "brigham-young-probate-case-file",
@@ -2549,7 +2549,7 @@ private
    "governor-spry-joseph-hillstrom-case-records",
    "governor-spry-joseph-hillstrom-petitions",
    "governor-spry-joseph-hillstrom-correspondence"],
- "Massachusetts"=>
+                    "Massachusetts" =>
   ["eugene-houghton-civil-war-letters",
    "arthur-osceola-waterman-civil-war-writings",
    "phillips-academy-cash-book-1795-1810",
@@ -2580,7 +2580,7 @@ private
    "death-and-mourning",
    "family-correspondence",
    "founding-documents"],
- "Iowa"=>
+                    "Iowa" =>
   ["adams-family-papers",
    "hayden",
    "iowa-seed-catalogs",
@@ -2589,38 +2589,37 @@ private
    "we-are-isu",
    "activist-agriculture",
    "lgbt"],
- "New Zealand"=>["finding-aids"],
- "India"=>["patkai-ranges-documents"],
- "Mississippi"=>["01095-leak", "cwrgm-public"],
- "Sweden"=>["the-jenny-lind-collection"],
- "New Hampshire"=>["colonial-north-america-monroe-c-gutman-library"],
- "Pennsylvania"=>
+                    "New Zealand" => ["finding-aids"],
+                    "India" => ["patkai-ranges-documents"],
+                    "Mississippi" => ["01095-leak", "cwrgm-public"],
+                    "Sweden" => ["the-jenny-lind-collection"],
+                    "New Hampshire" => ["colonial-north-america-monroe-c-gutman-library"],
+                    "Pennsylvania" =>
   ["diaries-and-notebooks-of-marian-anderson",
    "thompson-westcott-scrapbooks-of-the-history-of-the-philadelphia-stage",
    "eckley-oral-histories",
    "marian-anderson-notebooks-journals-and-diaries"],
- "Germany"=>["the-countess-of-hohenlohe-s-recipe-book"],
- "South Carolina"=>["manigault-family-papers"],
- "Syria"=>["butler-field-books"],
- "Colorado"=>
+                    "Germany" => ["the-countess-of-hohenlohe-s-recipe-book"],
+                    "South Carolina" => ["manigault-family-papers"],
+                    "Syria" => ["butler-field-books"],
+                    "Colorado" =>
   ["philemon-t-black-journals",
    "journal-1889",
    "journal-1890-1891",
    "journal-1892-1893",
    "journal-1893-1895"],
- "Hungary"=>["maria-madi-diaries"],
- "Connecticut"=>
+                    "Hungary" => ["maria-madi-diaries"],
+                    "Connecticut" =>
   ["19th-century-scientific-catalogs-geology-palentology",
    "pliny-fisk-journals-letters"],
- "Vermont"=>["robinson-family-papers"],
- "Missouri"=>["missouri-slave-schedules"],
- "Mexico"=>["la-linda-poblana-zarzuela-en-dos-actos"],
- "Peru"=>["digitizing-peru-s-print-revolution"],
- "Alabama"=>["css-alabama-logbooks", "department-of-corrections"],
- "Mauritius"=>["mauritius-project"]}
+                    "Vermont" => ["robinson-family-papers"],
+                    "Missouri" => ["missouri-slave-schedules"],
+                    "Mexico" => ["la-linda-poblana-zarzuela-en-dos-actos"],
+                    "Peru" => ["digitizing-peru-s-print-revolution"],
+                    "Alabama" => ["css-alabama-logbooks", "department-of-corrections"],
+                    "Mauritius" => ["mauritius-project"] }
 
-
-  LANGUAGE_TAGS = {"English"=>
+  LANGUAGE_TAGS = { "English" =>
   ["east-civil-war-letters",
    "jeremiah-white-graves-diaries",
    "thomas-tolman-family-organization",
@@ -3093,9 +3092,9 @@ private
    "edward-stabler-letters",
    "kummer-family-letters",
    "frank-t-lea-letters"],
- "Jawi"=>["jawi-transcription-project"],
- "Irish"=>["irish-dialect-archive-manuscript-collection"],
- "Latin"=>
+                    "Jawi" => ["jawi-transcription-project"],
+                    "Irish" => ["irish-dialect-archive-manuscript-collection"],
+                    "Latin" =>
   ["luke-wadding-papers",
    "parker-library-ms-44",
    "codex-marchalianus",
@@ -3104,7 +3103,7 @@ private
    "independent-crusaders-project",
    "latin",
    "latin-5495a47e-7b99-4355-988f-30fb7110a836"],
- "Italian"=>
+                    "Italian" =>
   ["death-in-venice",
    "lapo-di-castiglionchio",
    "humanist-manuscripts",
@@ -3112,14 +3111,14 @@ private
    "florentine-inventories-dalme",
    "firenze-notarile-antecosimiano-679-b32673ad-d4f5-4c97-8131-8655cb34d260",
    "deifira-harvard-university"],
- "Arabic"=>
+                    "Arabic" =>
   ["arabic-scientific-manuscripts",
    "silk-al-durar",
    "qutb-el-din-qirimi-18th-century",
    "qnl-manuscripts"],
- "Dutch"=>["selma-engel-papers"],
- "Hebrew"=>["hebrew-manuscripts-playground", "hebrew"],
- "French"=>
+                    "Dutch" => ["selma-engel-papers"],
+                    "Hebrew" => ["hebrew-manuscripts-playground", "hebrew"],
+                    "French" =>
   ["ben-yehuda",
    "festival-book-for-charles-vi",
    "the-case-of-magdalena-the-former-slave",
@@ -3137,28 +3136,28 @@ private
    "french",
    "french-7ed84f86-0b9e-45a2-a873-a768337b2574",
    "account-inventory-of-eudes-de-nevers"],
- "German"=>
+                    "German" =>
   ["inge-fischer-diary",
    "hans-vogel-diary",
    "the-countess-of-hohenlohe-s-recipe-book",
    "schutzbrief-or-safe-conduct-document-for-a-german-jew-1802",
    "alfred-rosenberg-diary",
    "german"],
- "Polish"=>
+                    "Polish" =>
   ["morris-and-lucy-breitbart-papers",
    "zyga-butler-papers",
    "waclaw-glouscek-papers-diary-1",
    "waclaw-glouscek-papers-diary-2"],
- "Hungarian"=>["clara-lefkowitz-kemplar-diary", "pal-szego-diary-final"],
- "Portuguese"=>["cartas-dos-mercedarios-do-para"],
- "Slovak"=>
+                    "Hungarian" => ["clara-lefkowitz-kemplar-diary", "pal-szego-diary-final"],
+                    "Portuguese" => ["cartas-dos-mercedarios-do-para"],
+                    "Slovak" =>
   ["oktober-1989",
    "november-1989",
    "december-1989",
    "september-1989",
    "august-1989"],
- "Malay"=>["syair-mesa-gumitar"],
- "Spanish"=>
+                    "Malay" => ["syair-mesa-gumitar"],
+                    "Spanish" =>
   ["colonial-north-america-dumbarton-oaks",
    "colonial-north-america-tozzer-library",
    "the-theory-and-craft-of-digital-preservation",
@@ -3168,5 +3167,5 @@ private
    "spanish",
    "spanish-6ea54ce4-5bf8-4bba-9ce3-183a852ccf35",
    "spanish-1251c206-1442-4602-8335-0eea6b752788"],
- "Greek"=>["greek"]}
+                    "Greek" => ["greek"] }
 end

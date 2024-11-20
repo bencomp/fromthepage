@@ -30,7 +30,7 @@ class IaController < ApplicationController
       work.collection = @collection
       work.save!
     else
-      #collection is required, but if something goes wrong due to browser version, create a collection
+      # collection is required, but if something goes wrong due to browser version, create a collection
       collection = Collection.new
       collection.owner = current_user
       collection.title = @ia_work.title.truncate(255, separator: ' ', omission: '')
@@ -42,13 +42,12 @@ class IaController < ApplicationController
     redirect_to :controller => 'work', :action => 'edit', :work_id => work.id
   end
 
-
   def mark_beginning
     beginning_leaf = IaLeaf.find(params[:ia_leaf_id])
 
     # delete all leaves preceding this leaf
     target_leaves = []
-    accumulation_mode=true
+    accumulation_mode = true
     @ia_work.ia_leaves.each do |leaf|
       if leaf == beginning_leaf
         accumulation_mode = false
@@ -69,7 +68,7 @@ class IaController < ApplicationController
 
     # delete all leaves preceding this leaf
     target_leaves = []
-    accumulation_mode=false
+    accumulation_mode = false
     @ia_work.ia_leaves.each do |leaf|
       if accumulation_mode
         target_leaves << leaf
@@ -101,7 +100,7 @@ class IaController < ApplicationController
 
   def confirm_import
     @detail_url = params[:detail_url]
-    #id = detail_url.split('/').last
+    # id = detail_url.split('/').last
 
     if @detail_url =~ /https?:\/\/(www\.)?archive\.org\/.+/
       @detail_url.sub!(/\/mode\/.*/, '')
@@ -119,7 +118,7 @@ class IaController < ApplicationController
 
   def import_work
     detail_url = params[:detail_url]
-    id = detail_url.sub(/.*archive.org\/details\//,'').sub(/\/.*/,'')
+    id = detail_url.sub(/.*archive.org\/details\//, '').sub(/\/.*/, '')
 
     # pull relevant info about the work from here
     @ia_work = IaWork.new
@@ -130,5 +129,4 @@ class IaController < ApplicationController
     flash[:notice] = t('.imported_into_staging', title: @ia_work.title)
     ajax_redirect_to :action => 'manage', :ia_work_id => @ia_work.id
   end
-
 end

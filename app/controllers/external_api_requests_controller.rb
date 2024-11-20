@@ -46,13 +46,15 @@ class ExternalApiRequestsController < ApplicationController
   end
 
   private
-    # Use callbacks to share common setup or constraints between actions.
-    def set_external_api_request
-      @external_api_request = ExternalApiRequest.find(params[:id])
-    end
 
-    # Only allow a trusted parameter "white list" through.
-    def external_api_request_params
-      params.require(:external_api_request).permit(:user_id, :collection_id, :work_id, :page_id, :engine, :status, :params)
-    end
+  # Use callbacks to share common setup or constraints between actions.
+  def set_external_api_request
+    @external_api_request = ExternalApiRequest.find(params[:id])
+  end
+
+  # Only allow a trusted parameter "white list" through.
+  def external_api_request_params
+    params.require(:external_api_request).permit(:user_id, :collection_id, :work_id, :page_id, :engine, :status,
+                                                 :params)
+  end
 end

@@ -6,8 +6,7 @@
 
 role :app, %w{fromthepage@50.116.44.131}
 role :db, %w{fromthepage@50.116.44.131}
-#role :web, %w{deploy@example.com}
-
+# role :web, %w{deploy@example.com}
 
 # Extended Server Syntax
 # ======================
@@ -15,9 +14,8 @@ role :db, %w{fromthepage@50.116.44.131}
 # server list. The second argument is a, or duck-types, Hash and is
 # used to set extended properties on the server.
 
-#server 'example.com', user: 'deploy', roles: %w{web app}, my_property: :my_value
+# server 'example.com', user: 'deploy', roles: %w{web app}, my_property: :my_value
 server '50.116.44.131', user: 'fromthepage', roles: %{app}
-
 
 # Custom SSH Options
 # ==================
@@ -45,6 +43,4 @@ server '50.116.44.131', user: 'fromthepage', roles: %{app}
 #     # password: 'please use keys'
 #   }
 
-
 set :branch, 'fromthepage.com'
-

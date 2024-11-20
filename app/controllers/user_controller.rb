@@ -15,10 +15,10 @@ class UserController < ApplicationController
     feature = params[:feature]
     value = params[:value]
     session[:features] ||= {}
-    if value=='enable'
-      session[:features][feature]=true
-    elsif value=='disable'
-      session[:features][feature]=nil
+    if value == 'enable'
+      session[:features][feature] = true
+    elsif value == 'disable'
+      session[:features][feature] = nil
     else
       if session[:features][feature]
         render :plain => "#{feature} is enabled"
@@ -46,10 +46,8 @@ class UserController < ApplicationController
     redirect_back :fallback_location => dashboard_role_path
   end
 
-
   NOTOWNER = "NOTOWNER"
   def update
-
     # spam check
     if !@user.owner && (params[:user][:about] != NOTOWNER || params[:user][:about] != NOTOWNER)
       logger.error("Possible spam: deleting user #{@user.email}")
@@ -58,7 +56,7 @@ class UserController < ApplicationController
     else
       params_hash = user_params.except(:notifications)
       notifications_hash = user_params[:notifications]
-      params_hash.delete_if { |k,v| v == NOTOWNER }
+      params_hash.delete_if { |k, v| v == NOTOWNER }
       params_hash[:dictation_language] = params[:dialect]
 
       if params_hash[:slug] == ""
@@ -68,7 +66,7 @@ class UserController < ApplicationController
       else
         @user.update(params_hash)
       end
-        @user.notification.update(notifications_hash)
+      @user.notification.update(notifications_hash)
 
       if @user.save!
         flash[:notice] = t('.user_updated')
@@ -94,14 +92,13 @@ class UserController < ApplicationController
     part = lang.split('-').first
     # Find the index of the language in the array (transform to integer)
     @lang_index = Collection::LANGUAGE_ARRAY.size.times
-      .select {|i| Collection::LANGUAGE_ARRAY[i].include?(part)}[0]
+                                            .select { |i| Collection::LANGUAGE_ARRAY[i].include?(part) }[0]
     # Then find the index of the nested dialect within the language array
     int = Collection::LANGUAGE_ARRAY[@lang_index].size.times
-      .select {|i| Collection::LANGUAGE_ARRAY[@lang_index][i].include?(lang)}[0]
+                                                 .select { |i| Collection::LANGUAGE_ARRAY[@lang_index][i].include?(lang) }[0]
     # Transform to integer and subtract 2 because of how the array is nested
-    @dialect_index = !int.nil? ? int-2 : nil
+    @dialect_index = !int.nil? ? int - 2 : nil
   end
-
 
   def api_key
     @user = current_user
@@ -112,7 +109,7 @@ class UserController < ApplicationController
     @user.api_key = User.generate_api_key
     @user.save!
 
-#    ajax_redirect_to(user_api_key_path(@user))
+    #    ajax_redirect_to(user_api_key_path(@user))
     render :action => :api_key, :layout => false
   end
 
@@ -157,9 +154,8 @@ class UserController < ApplicationController
     end
   end
 
-
   def user_params
-    params.require(:user).permit(:picture, :real_name, :orcid, :slug, :website, :location, :about, :preferred_locale, :help, :footer_block, notifications: [:user_activity, :owner_stats, :add_as_collaborator, :add_as_owner, :note_added, :add_as_reviewer])
+    params.require(:user).permit(:picture, :real_name, :orcid, :slug, :website, :location, :about, :preferred_locale,
+                                 :help, :footer_block, notifications: [:user_activity, :owner_stats, :add_as_collaborator, :add_as_owner, :note_added, :add_as_reviewer])
   end
-
 end

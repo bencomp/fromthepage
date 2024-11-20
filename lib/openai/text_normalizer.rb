@@ -6,8 +6,9 @@ module TextNormalizer
       parameters: {
         model: "gpt-3.5-turbo-16k",
         messages: [
-          {role: "system", content: "You are a scholarly editor who is preparing historical documents for publication."},
-          {role: "user", content: prompt}
+          { role: "system",
+            content: "You are a scholarly editor who is preparing historical documents for publication." },
+          { role: "user", content: prompt }
         ],
         max_tokens: 10000,
         n: 1,
@@ -27,22 +28,18 @@ module TextNormalizer
 
     text = response['choices'].first['message']['content']
 
-
     print text
     print "\n\n\n"
     text.sub(/\ATEXT\s/m, '')
   end
 
-
-
-private
+  private
 
   def self.normalize_prompt(raw_text)
     @@normalize_prompt ||= File.read(File.join(Rails.root, 'lib', 'openai', 'normalizer_prompt.txt'))
 
-    prompt = @@normalize_prompt.gsub("{{text}}", raw_text) 
+    prompt = @@normalize_prompt.gsub("{{text}}", raw_text)
 
     prompt
   end
-
 end

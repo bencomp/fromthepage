@@ -2,7 +2,6 @@ require 'spec_helper'
 
 RSpec.describe UserMailer, type: :mailer do
   describe 'nightly_user_activity' do
-
     context "inside the mailer email" do
       it 'renders the subject' do
         user = build_stubbed(:user)

@@ -150,5 +150,4 @@ class NotesController < ApplicationController
     deed.save!
     update_search_attempt_contributions
   end
-
 end

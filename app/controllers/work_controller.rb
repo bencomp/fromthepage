@@ -25,7 +25,9 @@ class WorkController < ApplicationController
   ]
 
   # no layout if xhr request
-  layout Proc.new { |controller| controller.request.xhr? ? false : nil }, only: [:new, :create, :configurable_printout, :edit_scribes, :remove_scribe]
+  layout Proc.new { |controller|
+    controller.request.xhr? ? false : nil
+  }, only: [:new, :create, :configurable_printout, :edit_scribes, :remove_scribe]
 
   def authorized?
     if !user_signed_in? || !current_user.owner
@@ -49,7 +51,6 @@ class WorkController < ApplicationController
     @bulk_export.report_arguments['include_metadata'] = true
     @bulk_export.report_arguments['preserve_linebreaks'] = false
   end
-
 
   def describe
     @layout_mode = cookies[:transcribe_layout_mode] || @collection.default_orientation
@@ -75,8 +76,6 @@ class WorkController < ApplicationController
       # unexpected state
     end
 
-
-
     if @work.save
       # TODO record_description_deed(@work)
       if @work.saved_change_to_description_status?
@@ -90,7 +89,6 @@ class WorkController < ApplicationController
     else
       render :describe
     end
-
   end
 
   def description_versions
@@ -98,9 +96,9 @@ class WorkController < ApplicationController
     # @previous_version = params[:compare_version_id] ? PageVersion.find(params[:compare_version_id]) : @selected_version.prev
     selected_version_id = params[:metadata_description_version_id]
     if selected_version_id
-      @selected_version= MetadataDescriptionVersion.find(selected_version_id)
+      @selected_version = MetadataDescriptionVersion.find(selected_version_id)
     else
-      @selected_version= @work.metadata_description_versions.first
+      @selected_version = @work.metadata_description_versions.first
     end
     # NB: Unlike in page versions (which are created when we first create the page), metadata description versions may be nil
     compare_version_id = params[:compare_version_id]
@@ -196,8 +194,8 @@ class WorkController < ApplicationController
     @work = Work.find(params[:id].to_i)
     id = @work.collection_id
     @collection = @work.collection if @collection.nil?
-    #check the work transcription convention against the collection version
-    #if they're the same, don't update that attribute of the work
+    # check the work transcription convention against the collection version
+    # if they're the same, don't update that attribute of the work
     params_convention = params[:work][:transcription_conventions]
     collection_convention = @work.collection.transcription_conventions
 
@@ -207,7 +205,7 @@ class WorkController < ApplicationController
       @work.attributes = work_params
     end
 
-    #if the slug field param is blank, set slug to original candidate
+    # if the slug field param is blank, set slug to original candidate
     if work_params[:slug].blank?
       @work.slug = @work.title.parameterize
     end
@@ -216,14 +214,14 @@ class WorkController < ApplicationController
       if @work.save
         change_collection(@work)
         flash[:notice] = t('.work_updated')
-        #find new collection to properly redirect
+        # find new collection to properly redirect
         col = Collection.find_by(id: @work.collection_id)
         redirect_to edit_collection_work_path(col.owner, col, @work)
       else
         @scribes = @work.scribes
         @nonscribes = User.all - @scribes
         @collections = current_user.collections
-        #set subjects to true if there are any articles/page_article_links
+        # set subjects to true if there are any articles/page_article_links
         @subjects = !@work.articles.blank?
         render :edit
       end
@@ -235,7 +233,7 @@ class WorkController < ApplicationController
         @scribes = @work.scribes
         @nonscribes = User.all - @scribes
         @collections = current_user.collections
-        #set subjects to true if there are any articles/page_article_links
+        # set subjects to true if there are any articles/page_article_links
         @subjects = !@work.articles.blank?
         render :edit
       end
@@ -245,12 +243,12 @@ class WorkController < ApplicationController
   def change_collection(work)
     record_deed(work, DeedType::WORK_ADDED, work.owner)
     unless work.articles.blank?
-      #delete page_article_links for this work
+      # delete page_article_links for this work
       page_ids = work.pages.ids
       links = PageArticleLink.where(page_id: page_ids)
       links.destroy_all
 
-      #remove links from pages in this work
+      # remove links from pages in this work
       work.pages.each do |p|
         unless p.source_text.nil?
           p.remove_transcription_links(p.source_text)
@@ -326,5 +324,4 @@ class WorkController < ApplicationController
       document_set_ids: []
     )
   end
-
 end

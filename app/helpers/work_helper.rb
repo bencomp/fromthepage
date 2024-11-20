@@ -1,14 +1,11 @@
 module WorkHelper
-
-
-
   def xml_to_docbook(page)
- #   docbook = REXML::Document.new
+    #   docbook = REXML::Document.new
     internal = REXML::Document.new(page.xml_text)
-#    doc.elements.each("//link") do |e|
-#      display_text = e.text
-#      e.replace_with(REXML::Text.new(display_text))
-#    end
+    #    doc.elements.each("//link") do |e|
+    #      display_text = e.text
+    #      e.replace_with(REXML::Text.new(display_text))
+    #    end
     # convert page to section
     internal.elements.each("//page") do |e|
       # create a new section
@@ -22,7 +19,7 @@ module WorkHelper
       docbook_sec.add(sec_title)
 
       # move former contents of PAGE to SECTION
-      e.children.each { |c| docbook_sec.add(c)}
+      e.children.each { |c| docbook_sec.add(c) }
       e.replace_with(docbook_sec)
     end
 
@@ -30,7 +27,7 @@ module WorkHelper
     internal.elements.each("//p") do |e|
       docbook_para = REXML::Element.new('para')
       docbook_para.add(REXML::Text.new("")) # docbook can't handle <para/>
-      e.children.each { |c| docbook_para.add(c)}
+      e.children.each { |c| docbook_para.add(c) }
       e.replace_with(docbook_para)
     end
 
@@ -62,10 +59,9 @@ module WorkHelper
         footnote = REXML::Element.new('footnote')
         footnote.add(fnpara)
         e.replace_with(footnote)
-        @displayed_already[article_id]=true
+        @displayed_already[article_id] = true
       end
     end
-
 
     # now our doc is correct - what do we do with it?
     my_display_html = ""
@@ -75,8 +71,6 @@ module WorkHelper
     logger.debug("DEBUG after slice!=#{my_display_html}")
     return my_display_html
   end
-
-
 
   def docbook_index_from_work(work)
     doc = REXML::Document.new();
@@ -113,5 +107,4 @@ module WorkHelper
     doc.write(string_xml)
     return string_xml
   end
-
 end

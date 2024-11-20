@@ -2,7 +2,7 @@ IMAGE_FILE_EXTENSIONS = ['jpg', 'JPG', 'jpeg', 'JPEG', 'png', 'PNG']
 IMAGE_FILE_EXTENSIONS_PATTERN = /jpg|JPG|jpeg|JPEG|png|PNG/
 TIFF_FILE_EXTENSIONS_PATTERN = /tif|TIF|tiff|TIFF/
 
-INGESTOR_ALLOWLIST =  [
+INGESTOR_ALLOWLIST = [
   'title',
   'identifier',
   'description',

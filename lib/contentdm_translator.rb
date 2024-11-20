@@ -1,6 +1,5 @@
 module ContentdmTranslator
-
-  def self.update_work_from_cdm(work, ocr_correction=false)
+  def self.update_work_from_cdm(work, ocr_correction = false)
     # find the work manifest -- bail out if there is none
     return unless work.sc_manifest
     # make sure the manifest is cdm
@@ -17,7 +16,7 @@ module ContentdmTranslator
     work.pages.each do |page|
       update_page_from_cdm(page, ocr_correction, fts_field)
     end
-    work.ocr_correction=ocr_correction
+    work.ocr_correction = ocr_correction
     work.save!
   end
 
@@ -73,7 +72,8 @@ module ContentdmTranslator
     "cdmfilesizeformatted",
     "cdmprintpdf",
     "cdmhasocr",
-    "cdmisnewspaper"]
+    "cdmisnewspaper"
+  ]
 
   def self.metadata_from_cdm_info(info)
     # only return useful and unique things
@@ -107,8 +107,6 @@ module ContentdmTranslator
     cdm
   end
 
-
-
   def self.iiif_manifest_is_cdm?(at_id)
     at_id.match(/contentdm.oclc.org/) || at_id.match(/iiif\/info\/\w+\/\d+\/manifest.json/)
   end
@@ -125,7 +123,7 @@ module ContentdmTranslator
 
   def self.fts_field_for_collection(collection)
     field_config = fetch_cdm_field_config(collection)
-    fts_field = field_config.detect { |element| element["type"] == "FTS"}
+    fts_field = field_config.detect { |element| element["type"] == "FTS" }
     if fts_field
       fts = fts_field['nick']
       error = nil
@@ -136,7 +134,6 @@ module ContentdmTranslator
     return error, fts
   end
 
-
   def self.export_work_to_cdm(work, username, password, license)
     error, fieldname = fts_field_for_collection(work.collection)
     if error
@@ -144,7 +141,7 @@ module ContentdmTranslator
       exit
     end
 
-    soap_client = Savon.client(:log=>true, filters: [:password], :wsdl => 'https://worldcat.org/webservices/contentdm/catcher?wsdl')
+    soap_client = Savon.client(:log => true, filters: [:password], :wsdl => 'https://worldcat.org/webservices/contentdm/catcher?wsdl')
     work.pages.each do |page|
       canvas_at_id = page.sc_canvas.sc_canvas_id
       manifest_at_id = work.sc_manifest.at_id
@@ -152,8 +149,8 @@ module ContentdmTranslator
       metadata_wrapper = {
         'metadataList' => {
           'metadata' => [
-            { :field => 'dmrecord', :value => cdm_record(canvas_at_id)},
-            { :field => fieldname, :value => page.verbatim_transcription_plaintext}
+            { :field => 'dmrecord', :value => cdm_record(canvas_at_id) },
+            { :field => fieldname, :value => page.verbatim_transcription_plaintext }
           ]
         }
       }
@@ -167,10 +164,9 @@ module ContentdmTranslator
         :metadata => metadata_wrapper,
         :action => 'edit'
       }
-      resp = soap_client.call(:process_conten_tdm, :message => message )
+      resp = soap_client.call(:process_conten_tdm, :message => message)
 
       puts resp.to_hash[:process_conten_tdm_response][:return]
-
     end
   end
 
@@ -186,21 +182,21 @@ module ContentdmTranslator
   private
 
   def self.cdm_server(at_id)
-    at_id.sub(/https:\/\/cdm/,'server').sub(/\/.*/,'')
+    at_id.sub(/https:\/\/cdm/, 'server').sub(/\/.*/, '')
   end
 
   def self.cdm_collection(at_id)
     if at_id.match(/.*iiif\/info\//)
       at_id.sub(/.*iiif\/info\//, '').sub(/\/\d+\/manifest.json/, '')
     elsif at_id.match(/.*iiif\/2\//)
-      at_id.sub(/.*iiif\/2\//, '').sub(/:.*/,'')
+      at_id.sub(/.*iiif\/2\//, '').sub(/:.*/, '')
     else # match https://cdm17168.contentdm.oclc.org/iiif/WFP:997/manifest.json
-      at_id.sub(/.*iiif\//, '').sub(/:.*/,'')
+      at_id.sub(/.*iiif\//, '').sub(/:.*/, '')
     end
   end
 
   def self.cdm_record(at_id)
-    at_id.sub(/\/canvas\/.*/,'').sub(/^.*\//, '').sub(/^.*:/, '')
+    at_id.sub(/\/canvas\/.*/, '').sub(/^.*\//, '').sub(/^.*:/, '')
   end
 
   def self.get_cdm_host_from_url(host)
@@ -225,12 +221,12 @@ module ContentdmTranslator
     raise "ContentDM URLs must be of the form http://cdmNNNNN.contentdm.oclc.org/..." if server.nil?
 
     matches = uri.path.match(/.*collection\/(\w+)(?:\/id\/(\d+))?/)
-    
+
     if matches
       collection = matches[1]
       record = matches[2]
     end
-    
+
     # support back-level CONTENTdm IIIF presentation implementation
     if server && collection && record
       new_uri = "https://#{server}.contentdm.oclc.org/iiif/info/#{collection}/#{record}/manifest.json"
@@ -255,7 +251,6 @@ module ContentdmTranslator
         # https://cdm17217.contentdm.oclc.org/iiif/2/manifest.json
         new_uri = "https://#{server}.contentdm.oclc.org/iiif/2/manifest.json"
       end
-
     end
 
     new_uri

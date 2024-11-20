@@ -8,11 +8,11 @@ RSpec.describe AdminMailer, type: :mailer do
       @new_collaborator = create(:user)
       @old_collaborator = create(:user)
       @old_deed = create(:deed, {
-        deed_type: DeedType::WORK_ADDED,
-        collection_id: @collection.id,
-        user_id: @old_collaborator.id,
-        created_at: 2.days.ago
-      })
+                           deed_type: DeedType::WORK_ADDED,
+                           collection_id: @collection.id,
+                           user_id: @old_collaborator.id,
+                           created_at: 2.days.ago
+                         })
     end
 
     after :all do
@@ -48,10 +48,10 @@ RSpec.describe AdminMailer, type: :mailer do
       end
       it "shows new collaborators' email" do
         @new_collaborator_deed = create(:deed, {
-          deed_type: DeedType::WORK_ADDED,
-          collection_id: @collection.id,
-          user_id: @new_collaborator.id
-        })
+                                          deed_type: DeedType::WORK_ADDED,
+                                          collection_id: @collection.id,
+                                          user_id: @new_collaborator.id
+                                        })
         activity = AdminMailer::OwnerCollectionActivity.build(@owner)
         mail = AdminMailer.collection_stats_by_owner(activity).deliver
 
@@ -61,10 +61,10 @@ RSpec.describe AdminMailer, type: :mailer do
       end
       it "shows new comments" do
         @new_comment = create(:deed, {
-          deed_type: DeedType::NOTE_ADDED,
-          collection_id: @collection.id,
-          user_id: @old_collaborator.id
-        })
+                                deed_type: DeedType::NOTE_ADDED,
+                                collection_id: @collection.id,
+                                user_id: @old_collaborator.id
+                              })
         activity = AdminMailer::OwnerCollectionActivity.build(@owner)
         mail = AdminMailer.collection_stats_by_owner(activity).deliver
 
@@ -78,10 +78,10 @@ RSpec.describe AdminMailer, type: :mailer do
       end
       it "shows new activity collection title" do
         @new_deed = create(:deed, {
-          deed_type: DeedType::WORK_ADDED,
-          collection_id: @collection.id,
-          user_id: @old_collaborator.id
-        })
+                             deed_type: DeedType::WORK_ADDED,
+                             collection_id: @collection.id,
+                             user_id: @old_collaborator.id
+                           })
         activity = AdminMailer::OwnerCollectionActivity.build(@owner)
         mail = AdminMailer.collection_stats_by_owner(activity).deliver
         expect(mail.html_part.body.decoded).to match(@collection.title)
@@ -89,10 +89,10 @@ RSpec.describe AdminMailer, type: :mailer do
       end
       it "shows new activity" do
         @new_deed = create(:deed, {
-          deed_type: DeedType::WORK_ADDED,
-          collection_id: @collection.id,
-          user_id: @old_collaborator.id
-        })
+                             deed_type: DeedType::WORK_ADDED,
+                             collection_id: @collection.id,
+                             user_id: @old_collaborator.id
+                           })
         activity = AdminMailer::OwnerCollectionActivity.build(@owner)
         mail = AdminMailer.collection_stats_by_owner(activity).deliver
         expect(mail.html_part.body.decoded).to match(@old_collaborator.display_name)
@@ -100,10 +100,10 @@ RSpec.describe AdminMailer, type: :mailer do
       end
       it "doesn't show language hashes" do
         @new_deed = create(:deed, {
-          deed_type: DeedType::WORK_ADDED,
-          collection_id: @collection.id,
-          user_id: @old_collaborator.id
-        })
+                             deed_type: DeedType::WORK_ADDED,
+                             collection_id: @collection.id,
+                             user_id: @old_collaborator.id
+                           })
         activity = AdminMailer::OwnerCollectionActivity.build(@owner)
         mail = AdminMailer.collection_stats_by_owner(activity).deliver
         expect(mail.html_part.body.decoded).not_to match('{"en":')
@@ -116,10 +116,10 @@ RSpec.describe AdminMailer, type: :mailer do
       end
       it "doesn't show other activity if is only comments" do
         @new_comment = create(:deed, {
-          deed_type: DeedType::NOTE_ADDED,
-          collection_id: @collection.id,
-          user_id: @old_collaborator.id
-        })
+                                deed_type: DeedType::NOTE_ADDED,
+                                collection_id: @collection.id,
+                                user_id: @old_collaborator.id
+                              })
         activity = AdminMailer::OwnerCollectionActivity.build(@owner)
         mail = AdminMailer.collection_stats_by_owner(activity).deliver
         expect(mail.html_part.body.decoded).not_to match("Other Recent Activity in Your Collections")

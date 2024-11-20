@@ -1,5 +1,4 @@
 module Components::FiltersHelper
-
   def fe_filter_table_wrapper(url:, selector:, sorting:, ordering:, static_params: {}, &block)
     dataset = {
       filterable_table: true,
@@ -39,5 +38,4 @@ module Components::FiltersHelper
   def fe_table_no_contents
     render('shared/components/table_no_contents')
   end
-
 end

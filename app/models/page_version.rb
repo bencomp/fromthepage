@@ -27,7 +27,7 @@ class PageVersion < ApplicationRecord
 
   after_create :check_content
 
-    def check_content
+  def check_content
     if content_changed?
       Flag.check_page(self)
     end

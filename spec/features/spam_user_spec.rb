@@ -1,7 +1,6 @@
 require 'spec_helper'
 
 describe "Spam user safeguards" do
-
   it "allows users to modify their profile" do
     user = create('martha1')
     click_link "Your Profile"
@@ -36,11 +35,9 @@ describe "Spam user safeguards" do
     click_button("Update Profile")
     expect(page).to have_content("just some guy")
     expect(page).to have_content("He's just some guy, you know?")
-    #display is only of the word website, not the actual url
+    # display is only of the word website, not the actual url
     expect(page).to have_content("Website")
   end
-
-
 
   def create(login)
     visit "/"
@@ -57,8 +54,4 @@ describe "Spam user safeguards" do
     user = User.where(:login => login).first
     user
   end
-
-
-
-
 end

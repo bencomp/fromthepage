@@ -7,5 +7,4 @@ namespace :fromthepage do
       end
     end
   end
-
 end

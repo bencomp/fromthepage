@@ -6,9 +6,8 @@ set :rails_env, "production"
 # property set.  Don't declare `role :all`, it's a meta role.
 
 role :app, %w{fromthepage@45.79.215.153}
-#role :web, %w{deploy@example.com}
+# role :web, %w{deploy@example.com}
 role :db,  %w{fromthepage@45.79.215.153}
-
 
 # Extended Server Syntax
 # ======================
@@ -16,9 +15,8 @@ role :db,  %w{fromthepage@45.79.215.153}
 # server list. The second argument is a, or duck-types, Hash and is
 # used to set extended properties on the server.
 
-#server 'example.com', user: 'deploy', roles: %w{web app}, my_property: :my_value
+# server 'example.com', user: 'deploy', roles: %w{web app}, my_property: :my_value
 server '45.79.215.153', user: 'fromthepage', roles: %{app}
-
 
 # Custom SSH Options
 # ==================
@@ -46,6 +44,4 @@ server '45.79.215.153', user: 'fromthepage', roles: %{app}
 #     # password: 'please use keys'
 #   }
 
-
 set :branch, 'fromthepage.com-rails6'
-

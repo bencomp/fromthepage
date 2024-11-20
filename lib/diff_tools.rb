@@ -1,5 +1,4 @@
 module DiffTools
-
   def self.diff_and_replace(text_a, text_b, replacement)
     # this method compares two strings and produces a third string which contains all identical text, with the differences replaced by the replacement string
     # compare the two strings
@@ -22,13 +21,13 @@ module DiffTools
     doc.search('li').each do |li|
       # if the li tag has a class of del, ignore it
       next if ['del', 'diff-comment', 'diff-block-info'].include? li['class']
+
       # add the plaintext content of the li tag to the lines array
       lines << li.content
     end
     # return the lines array joined by newlines
     lines.join("\n")
   end
-
 
   def self.replace_words(text, replacement)
     # find all the words in the text which contain the replacement string, and substitute them with the replacement string

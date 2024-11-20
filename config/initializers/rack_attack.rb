@@ -1,5 +1,4 @@
 class Rack::Attack
-
   ### Configure Cache ###
 
   # If you don't want to use Rails.cache (Rack::Attack's default), then
@@ -9,9 +8,7 @@ class Rack::Attack
   # safelisting). It must implement .increment and .write like
   # ActiveSupport::Cache::Store
 
-  Rack::Attack.cache.store = ActiveSupport::Cache::MemoryStore.new 
-
-
+  Rack::Attack.cache.store = ActiveSupport::Cache::MemoryStore.new
 
   # Always allow requests from localhost, so tests can run
   # (blocklist & throttles are skipped)
@@ -39,13 +36,10 @@ class Rack::Attack
     req.ip # unless req.path.start_with?('/assets')
   end
 
-
   # see https://github.com/benwbrum/fromthepage/issues/4130
   Rack::Attack.blocklist('block bad bots') do |req|
     req.user_agent&.match?(/(ClaudeBot|Bytespider|SemrushBot|AhrefsBot|DataForSeoBot|AhrefsBot|DotBot|MJ12bot|PetalBot)/)
   end
-
-    
 
   ### Prevent Brute-Force Login Attacks ###
 

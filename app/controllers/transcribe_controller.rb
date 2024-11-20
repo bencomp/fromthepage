@@ -1,5 +1,4 @@
-class TranscribeController  < ApplicationController
-
+class TranscribeController < ApplicationController
   include AbstractXmlController
   include DisplayHelper
 
@@ -9,7 +8,7 @@ class TranscribeController  < ApplicationController
   before_action :active?, :except => [:still_editing, :active_editing]
 
   protect_from_forgery :except => [:zoom, :unzoom]
-  #this prevents failed redirects after sign up
+  # this prevents failed redirects after sign up
   skip_before_action :store_current_location
   skip_before_action :load_objects_from_params, only: :still_editing
   skip_before_action :load_html_blocks, only: [:still_editing, :active_editing]
@@ -115,9 +114,9 @@ class TranscribeController  < ApplicationController
           @page.status = :needs_review
           record_deed(DeedType::NEEDS_REVIEW)
         end
-        #if @page.translation_status == 'blank'
+        # if @page.translation_status == 'blank'
         #  @page.translation_status = nil
-        #end
+        # end
       else
         if @page.status_needs_review?
           @page.status = :new
@@ -163,7 +162,8 @@ class TranscribeController  < ApplicationController
         if params[:page]['needs_review'] != '1' && Page::COMPLETED_STATUSES.include?(@page.status)
           skip_re_review = @collection.owner == current_user ||
                            @collection.reviewers.ids.include?(current_user.id) ||
-                           Deed.where(deed_type: DeedType::COMPLETED_TYPES, user_id: current_user.id, page_id: @page.id).any?
+                           Deed.where(deed_type: DeedType::COMPLETED_TYPES, user_id: current_user.id,
+                                      page_id: @page.id).any?
 
           @page.status = skip_re_review ? :transcribed : :needs_review
         else
@@ -345,10 +345,10 @@ class TranscribeController  < ApplicationController
 
     @page.attributes = page_params
 
-    #check to see if the page is marked blank
+    # check to see if the page is marked blank
     mark_page_blank or return
 
-    #check to see if the page needs review
+    # check to see if the page needs review
     needs_review
 
     if params['save']
@@ -372,16 +372,16 @@ class TranscribeController  < ApplicationController
             end
           end
 
-          @work.work_statistic.recalculate({type: @page.translation_status}) if @work.work_statistic
+          @work.work_statistic.recalculate({ type: @page.translation_status }) if @work.work_statistic
           @page.submit_background_processes("translation")
 
-          #if this is a guest user, force them to sign up after three saves
+          # if this is a guest user, force them to sign up after three saves
           if current_user.guest?
             deeds = Deed.where(user_id: current_user.id).where(deed_type: DeedType.edited_and_transcribed_pages).count
             if deeds < GUEST_DEED_COUNT
               flash[:notice] = t('.notice', guest_deed_count: GUEST_DEED_COUNT)
             else
-              session[:user_return_to]=collection_translate_page_path(@collection.owner, @collection, @work, @page.id)
+              session[:user_return_to] = collection_translate_page_path(@collection.owner, @collection, @work, @page.id)
               redirect_to new_user_registration_path, :resource => current_user
               return
             end
@@ -400,7 +400,7 @@ class TranscribeController  < ApplicationController
         render :action => 'translate'
         flash.clear
         # raise ex
-      rescue  => ex
+      rescue => ex
         log_translation_exception(ex, message)
         flash[:error] = ex.message
         logger.fatal "\n\n#{ex.class} (#{ex.message}):\n"
@@ -449,7 +449,8 @@ class TranscribeController  < ApplicationController
 
     if @work.next_untranscribed_page
       flash[:notice] = t('.another_page_notice')
-      next_page_path = collection_transcribe_page_path(@work.collection.owner, @work.collection, @work, @work.next_untranscribed_page)
+      next_page_path = collection_transcribe_page_path(@work.collection.owner, @work.collection, @work,
+                                                       @work.next_untranscribed_page)
     elsif @collection.class == DocumentSet
       docset = @collection
       next_page = docset.find_next_untranscribed_page_for_user(current_user)
@@ -460,7 +461,8 @@ class TranscribeController  < ApplicationController
         next_page = docset.collection.find_next_untranscribed_page_for_user(current_user)
         unless next_page.nil?
           flash[:notice] = t('.no_more_pages_notice')
-          next_page_path = collection_transcribe_page_path(docset.collection.owner, docset.collection, next_page.work, next_page)
+          next_page_path = collection_transcribe_page_path(docset.collection.owner, docset.collection, next_page.work,
+                                                           next_page)
         end
       end
     else
@@ -475,8 +477,8 @@ class TranscribeController  < ApplicationController
 
   protected
 
-  TRANSLATION="TRANSLATION"
-  TRANSCRIPTION="TRANSCRIPTION"
+  TRANSLATION = "TRANSLATION"
+  TRANSCRIPTION = "TRANSCRIPTION"
 
   def log_attempt(attempt_type, source_text)
     # we have access to @page, @user, and params
@@ -509,7 +511,6 @@ class TranscribeController  < ApplicationController
     log_message = "#{attempt_type}\t#{@transcript_date}\tSUCCESS\t"
     logger.info(log_message)
   end
-
 
   def log_transcript_attempt
     # we have access to @page, @user, and params

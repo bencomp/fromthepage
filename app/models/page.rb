@@ -85,7 +85,7 @@ class Page < ApplicationRecord
   after_initialize :defaults
   after_destroy :update_work_stats
   # after_destroy :delete_deeds
-  after_destroy :update_featured_page, if: Proc.new {|page| page.work.featured_page == page.id}
+  after_destroy :update_featured_page, if: Proc.new { |page| page.work.featured_page == page.id }
 
   serialize :metadata, Hash
 
@@ -234,6 +234,7 @@ class Page < ApplicationRecord
     if self.base_image.blank?
       return nil
     end
+
     if !File.exists?(thumbnail_filename())
       if File.exists?(modernize_absolute(self.base_image))
         generate_thumbnail
@@ -273,7 +274,8 @@ class Page < ApplicationRecord
           self.approval_delta = nil
         else
           self.approval_delta =
-            Text::Levenshtein.distance(old_transcription, new_transcription).to_f / (old_transcription.size + new_transcription.size).to_f
+            Text::Levenshtein.distance(old_transcription,
+                                       new_transcription).to_f / (old_transcription.size + new_transcription.size).to_f
         end
       else # zero out deltas if the page is not complete
         self.approval_delta = nil
@@ -282,39 +284,37 @@ class Page < ApplicationRecord
   end
 
   def create_version
-      return unless self.saved_change_to_source_text? || self.saved_change_to_title? || self.saved_changes.present?
+    return unless self.saved_change_to_source_text? || self.saved_change_to_title? || self.saved_changes.present?
 
-      version = PageVersion.new
-      version.page = self
-      version.title = self.title
-      version.transcription = self.source_text
-      version.xml_transcription = self.xml_text
-      version.source_translation = self.source_translation
-      version.xml_translation = self.xml_translation
-      version.status = self.status
+    version = PageVersion.new
+    version.page = self
+    version.title = self.title
+    version.transcription = self.source_text
+    version.xml_transcription = self.xml_text
+    version.source_translation = self.source_translation
+    version.xml_translation = self.xml_translation
+    version.status = self.status
 
-      # Add other attributes as needed
+    # Add other attributes as needed
 
-      unless User.current_user.nil?
-        version.user = User.current_user
-      else
-        version.user = User.find_by(id: self.work.owner_user_id)
-      end
+    unless User.current_user.nil?
+      version.user = User.current_user
+    else
+      version.user = User.find_by(id: self.work.owner_user_id)
+    end
 
-      # now do the complicated version update thing
-      version.work_version = self.work.transcription_version
-      self.work.increment!(:transcription_version)
+    # now do the complicated version update thing
+    version.work_version = self.work.transcription_version
+    self.work.increment!(:transcription_version)
 
-      previous_version = PageVersion.where("page_id = ?", self.id).order("page_version DESC").first
-      if previous_version
-        version.page_version = previous_version.page_version + 1
-      end
-      version.save!
+    previous_version = PageVersion.where("page_id = ?", self.id).order("page_version DESC").first
+    if previous_version
+      version.page_version = previous_version.page_version + 1
+    end
+    version.save!
 
-      self.update_column(:page_version_id, version.id) # set current_version
-
+    self.update_column(:page_version_id, version.id) # set current_version
   end
-
 
   def update_sections_and_tables
     if @sections
@@ -332,7 +332,7 @@ class Page < ApplicationRecord
           row.each_with_index do |cell, cell_index|
             tc = TableCell.new(:row => rownum,
                                :content => cell,
-                               :header => table[:header][cell_index] )
+                               :header => table[:header][cell_index])
             tc.work = self.work
             tc.page = self
             tc.section = table[:section]
@@ -378,7 +378,7 @@ class Page < ApplicationRecord
         if self.source_text.nil?
           0
         else
-          self.source_text.lines.select{|line| line.match(/\S/)}.count
+          self.source_text.lines.select { |line| line.match(/\S/) }.count
         end
       end
     else
@@ -392,7 +392,7 @@ class Page < ApplicationRecord
   # once to reset the previous links, once to reset new links
   def clear_article_graphs
     article_ids = self.page_article_links.pluck(:article_id)
-    Article.where(id: article_ids).update_all(:graph_image=>nil)
+    Article.where(id: article_ids).update_all(:graph_image => nil)
   end
 
   def populate_search
@@ -415,7 +415,6 @@ class Page < ApplicationRecord
     emended_plaintext(self.xml_translation)
   end
 
-
   def process_spreadsheet(field, cell_data)
     # returns a formatted string
     formatted = String.new
@@ -429,7 +428,7 @@ class Page < ApplicationRecord
     column_configs.each do |column|
       formatted << "<th>#{column.label}</th>"
     end
-    checkbox_headers = column_configs.select{|cc| cc.input_type == 'checkbox'}.map{|cc| cc.label }.flatten
+    checkbox_headers = column_configs.select { |cc| cc.input_type == 'checkbox' }.map { |cc| cc.label }.flatten
 
     formatted << "</thead><tbody>"
     # write out
@@ -441,7 +440,7 @@ class Page < ApplicationRecord
         row.each_with_index do |cell, colnum|
           column = column_configs[colnum]
           # save the table cell object
-          tc = TableCell.new(row: rownum+1)
+          tc = TableCell.new(row: rownum + 1)
           tc.work = self.work
           tc.page = self
           tc.transcription_field_id = field.id
@@ -473,16 +472,18 @@ class Page < ApplicationRecord
   def this_and_following_rows_empty?(cell_data, rownum)
     remaining_rows = cell_data[rownum..(cell_data.count - 1)]
 
-    row_with_value = remaining_rows.detect { |row|  row.detect{|cell| !cell.blank? } }
+    row_with_value = remaining_rows.detect { |row| row.detect { |cell| !cell.blank? } }
 
     row_with_value.nil?
   end
 
   def replace_table_cells(new_table_cells)
-    self.table_cells.insert_all(new_table_cells.map{|obj| obj.attributes.merge({created_at: Time.now, updated_at: Time.now})})
+    self.table_cells.insert_all(new_table_cells.map { |obj|
+      obj.attributes.merge({ created_at: Time.now, updated_at: Time.now })
+    })
   end
 
-  #create table cells if the collection is field based
+  # create table cells if the collection is field based
   def process_fields(field_cells)
     new_table_cells = []
     string = String.new
@@ -540,9 +541,9 @@ class Page < ApplicationRecord
   end
 
   def thumbnail_filename
-    filename=modernize_absolute(self.base_image)
-    ext=File.extname(filename)
-    filename.sub(/#{ext}$/,"_thumb#{ext}")
+    filename = modernize_absolute(self.base_image)
+    ext = File.extname(filename)
+    filename.sub(/#{ext}$/, "_thumb#{ext}")
   end
 
   def remove_transcription_links(text)
@@ -604,11 +605,9 @@ class Page < ApplicationRecord
     File.write(ai_plaintext_path, text)
   end
 
-
   def has_alto?
     File.exists?(alto_path)
   end
-
 
   def alto_xml
     if has_alto?
@@ -622,7 +621,6 @@ class Page < ApplicationRecord
     FileUtils.mkdir_p(File.dirname(alto_path)) unless Dir.exist? File.dirname(alto_path)
     File.write(alto_path, xml)
   end
-
 
   def image_url_for_download
     if sc_canvas
@@ -647,6 +645,7 @@ class Page < ApplicationRecord
   end
 
   private
+
   def ai_plaintext_path
     File.join(Rails.root, 'public', 'text', self.work_id.to_s, "#{self.id}_ai_plaintext.txt")
   end
@@ -659,11 +658,10 @@ class Page < ApplicationRecord
     '/not/implemented/yet/placeholder.xml'
   end
 
-
   def emended_plaintext(source)
     doc = Nokogiri::XML(source)
-    doc.xpath("//link").each { |n| n.replace(n['target_title'])}
-    doc.xpath("//abbr").each { |n| n.replace(n['expan'])}
+    doc.xpath("//link").each { |n| n.replace(n['target_title']) }
+    doc.xpath("//abbr").each { |n| n.replace(n['expan']) }
     formatted_plaintext_doc(doc)
   end
 
@@ -681,7 +679,7 @@ class Page < ApplicationRecord
   end
 
   def formatted_plaintext_doc(doc)
-    doc.xpath("//p").each { |n| n.add_next_sibling("\n\n")}
+    doc.xpath("//p").each { |n| n.add_next_sibling("\n\n") }
     doc.xpath("//lb[@break='no']").each do |n|
       if n.text.blank?
         sigil = '-'
@@ -691,19 +689,18 @@ class Page < ApplicationRecord
       n.replace("#{sigil}\n")
     end
     doc.xpath("//table").each { |n| formatted_plaintext_table(n) }
-    doc.xpath("//lb").each { |n| n.replace("\n")}
-    doc.xpath("//br").each { |n| n.replace("\n")}
-    doc.xpath("//div").each { |n| n.add_next_sibling("\n")}
-    doc.xpath("//footnote").each { |n| n.replace('')}
+    doc.xpath("//lb").each { |n| n.replace("\n") }
+    doc.xpath("//br").each { |n| n.replace("\n") }
+    doc.xpath("//div").each { |n| n.add_next_sibling("\n") }
+    doc.xpath("//footnote").each { |n| n.replace('') }
 
-    doc.text.sub(/^\s*/m, '').gsub(/ *$/m,'')
+    doc.text.sub(/^\s*/m, '').gsub(/ *$/m, '')
   end
 
   def formatted_plaintext_table(table_element)
     text_table = xml_table_to_markdown_table(table_element)
     table_element.replace(text_table)
   end
-
 
   def modernize_absolute(filename)
     if filename
@@ -728,5 +725,4 @@ class Page < ApplicationRecord
   def update_featured_page
     self.work.update_columns(featured_page: nil)
   end
-
 end

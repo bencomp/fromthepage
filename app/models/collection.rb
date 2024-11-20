@@ -65,19 +65,24 @@ class Collection < ApplicationRecord
 
   has_many :collection_blocks, dependent: :destroy
   has_many :blocked_users, through: :collection_blocks, source: :user
-  has_many :works, -> { order(:title) }, dependent: :destroy #, :order => :position
+  has_many :works, -> { order(:title) }, dependent: :destroy # , :order => :position
   has_many :notes, -> { order(created_at: :desc) }, dependent: :destroy
   has_many :articles, dependent: :destroy
   has_many :document_sets, -> { order(:title) }, dependent: :destroy
   has_many :categories, -> { order(:title) }
   has_many :deeds, -> { order(created_at: :desc) }, dependent: :destroy
   has_one :sc_collection, :dependent => :destroy
-  has_many :transcription_fields, -> { where field_type: TranscriptionField::FieldType::TRANSCRIPTION }, :dependent => :destroy
-  has_many :metadata_fields, -> { where field_type: TranscriptionField::FieldType::METADATA }, :class_name => 'TranscriptionField', :dependent => :destroy
+  has_many :transcription_fields, -> {
+    where field_type: TranscriptionField::FieldType::TRANSCRIPTION
+  }, :dependent => :destroy
+  has_many :metadata_fields, -> {
+    where field_type: TranscriptionField::FieldType::METADATA
+  }, :class_name => 'TranscriptionField', :dependent => :destroy
   has_many :bulk_exports, :dependent => :destroy
   has_many :editor_buttons, :dependent => :destroy
   has_one :quality_sampling, :dependent => :destroy
-  belongs_to :messageboard_group, class_name: 'Thredded::MessageboardGroup', foreign_key: 'thredded_messageboard_group_id', optional: true
+  belongs_to :messageboard_group, class_name: 'Thredded::MessageboardGroup',
+                                  foreign_key: 'thredded_messageboard_group_id', optional: true
 
   belongs_to :next_untranscribed_page, foreign_key: 'next_untranscribed_page_id', class_name: 'Page', optional: true
   has_many :pages, -> { reorder('works.title, pages.position') }, through: :works
@@ -106,17 +111,18 @@ class Collection < ApplicationRecord
   mount_uploader :picture, PictureUploader
 
   scope :order_by_recent_activity, -> { order(most_recent_deed_created_at: :desc) }
-  scope :unrestricted, -> { where(restricted: false)}
-  scope :restricted, -> { where(restricted: true)}
-  scope :order_by_incomplete, -> { joins(works: :work_statistic).reorder('work_statistics.complete ASC')}
-  scope :carousel, -> {where(pct_completed: [nil, 0..90]).where.not(picture: nil).where.not(intro_block: [nil, '']).where(restricted: false).reorder(Arel.sql("RAND()"))}
+  scope :unrestricted, -> { where(restricted: false) }
+  scope :restricted, -> { where(restricted: true) }
+  scope :order_by_incomplete, -> { joins(works: :work_statistic).reorder('work_statistics.complete ASC') }
+  scope :carousel, -> {
+    where(pct_completed: [nil, 0..90]).where.not(picture: nil).where.not(intro_block: [nil, '']).where(restricted: false).reorder(Arel.sql("RAND()"))
+  }
   scope :has_intro_block, -> { where.not(intro_block: [nil, '']) }
   scope :has_picture, -> { where.not(picture: nil) }
   scope :not_near_complete, -> { where(pct_completed: [nil, 0..90]) }
   scope :not_empty, -> { where.not(works_count: [0, nil]) }
 
-
-  scope :random_sample, -> (sample_size = 5) do
+  scope :random_sample, ->(sample_size = 5) do
     carousel
     reorder(Arel.sql("RAND()")) unless sample_size > 1
     limit(sample_size).reorder(Arel.sql("RAND()"))
@@ -127,7 +133,6 @@ class Collection < ApplicationRecord
     METADATA_ONLY = 'metadata'
     TEXT_AND_METADATA = 'text_and_metadata'
   end
-
 
   def text_entry?
     self.data_entry_type == DataEntryType::TEXT_AND_METADATA || self.data_entry_type == DataEntryType::TEXT_ONLY
@@ -157,8 +162,9 @@ class Collection < ApplicationRecord
 
   def pages_needing_review_for_one_off
     all_edits_by_user = self.deeds.where(deed_type: DeedType.transcriptions_or_corrections).group(:user_id).count
-    one_off_editors = all_edits_by_user.select{|k,v| v == 1}.map{|k,v| k}
-    self.pages.where(status: :needs_review).joins(:current_version).where('page_versions.user_id in (?)', one_off_editors)
+    one_off_editors = all_edits_by_user.select { |k, v| v == 1 }.map { |k, v| k }
+    self.pages.where(status: :needs_review).joins(:current_version).where('page_versions.user_id in (?)',
+                                                                          one_off_editors)
   end
 
   def never_reviewed_users
@@ -171,13 +177,12 @@ class Collection < ApplicationRecord
     review_type != ReviewType::OPTIONAL
   end
 
-
-
   def enable_messageboards
     if self.messageboard_group.nil?
       self.messageboard_group = Thredded::MessageboardGroup.find_or_create_by!(name: self.title)
       # now create the default messageboards
-      Thredded::Messageboard.find_or_create_by!(name: 'General', description: 'General discussion', messageboard_group_id: self.messageboard_group.id)
+      Thredded::Messageboard.find_or_create_by!(name: 'General', description: 'General discussion',
+                                                messageboard_group_id: self.messageboard_group.id)
       Thredded::Messageboard.find_or_create_by!(name: 'Help', messageboard_group_id: self.messageboard_group.id)
     end
     self.messageboards_enabled = true
@@ -185,7 +190,7 @@ class Collection < ApplicationRecord
   end
 
   def disable_messageboards
-    self.messageboards_enabled=false
+    self.messageboards_enabled = false
     self.save!
   end
 
@@ -240,7 +245,7 @@ class Collection < ApplicationRecord
   end
 
   def create_categories
-    #create two default categories
+    # create two default categories
     category1 = Category.new(collection_id: self.id, title: "People")
     category1.save
     category2 = Category.new(collection_id: self.id, title: "Places")
@@ -268,7 +273,7 @@ class Collection < ApplicationRecord
 
   def uniquify_slug
     if DocumentSet.where(slug: self.slug).exists?
-      self.slug = self.slug+'-collection'
+      self.slug = self.slug + '-collection'
     end
   end
 
@@ -277,22 +282,22 @@ class Collection < ApplicationRecord
     works = Work.where(collection_id: self.id)
     pages = Page.where(work_id: works.ids)
 
-    #delete deeds for pages and articles (not work add deed)
+    # delete deeds for pages and articles (not work add deed)
     Deed.where(page_id: pages.ids).destroy_all
     Deed.where(article_id: self.articles.ids).destroy_all
-    #delete articles
+    # delete articles
     Article.where(collection_id: self.id).destroy_all
-    #delete categories (aside from the default)
+    # delete categories (aside from the default)
     Category.where(collection_id: self.id).where.not(title: 'People').where.not(title: 'Places').destroy_all
-    #delete notes
+    # delete notes
     Note.where(page_id: pages.ids).destroy_all
-    #delete page_article_links
+    # delete page_article_links
     PageArticleLink.where(page_id: pages.ids).destroy_all
-    #update work transcription version
+    # update work transcription version
     works.each do |w|
       w.update_columns(transcription_version: 0)
     end
-    #for each page, delete page versions, update all attributes, save
+    # for each page, delete page versions, update all attributes, save
     pages.each do |p|
       p.page_versions.destroy_all
       p.update_columns(source_text: nil, created_on: Time.now, lock_version: 0, xml_text: nil,
@@ -301,7 +306,7 @@ class Collection < ApplicationRecord
       p.save!
     end
 
-    #fix user_id for page version (doesn't get set in this type of update)
+    # fix user_id for page version (doesn't get set in this type of update)
     PageVersion.where(page_id: pages.ids).each do |v|
       v.user_id = self.owner.id
       v.save!
@@ -354,18 +359,18 @@ class Collection < ApplicationRecord
     return next_untranscribed_page if user.can_transcribe?(next_untranscribed_page.work)
 
     public = works
-      .where.not(next_untranscribed_page_id: nil)
-      .unrestricted
-      .order_by_incomplete
+             .where.not(next_untranscribed_page_id: nil)
+             .unrestricted
+             .order_by_incomplete
 
     return public.first.next_untranscribed_page unless public.empty?
 
     private = works
-      .where.not(next_untranscribed_page_id: nil)
-      .restricted
-      .order_by_incomplete
+              .where.not(next_untranscribed_page_id: nil)
+              .restricted
+              .order_by_incomplete
 
-    wk = private.find{ |w| user.can_transcribe?(w) }
+    wk = private.find { |w| user.can_transcribe?(w) }
 
     wk.nil? ? nil : wk.next_untranscribed_page
   end
@@ -422,7 +427,7 @@ class Collection < ApplicationRecord
     stats
   end
 
-  #constant
+  # constant
   LANGUAGE_ARRAY = [['Afrikaans', 'af', ['af-ZA']],
                     ['አማርኛ', 'am', ['am-ET']],
                     ['Azərbaycanca', 'az', ['az-AZ']],
@@ -433,8 +438,10 @@ class Collection < ApplicationRecord
                     ['Čeština', 'cs', ['cs-CZ']],
                     ['Dansk', 'da', ['da-DK']],
                     ['Deutsch', 'de', ['de-DE']],
-                    ['English', 'en', ['en-AU', 'Australia'], ['en-CA', 'Canada'], ['en-IN', 'India'], ['en-KE', 'Kenya'], ['en-TZ', 'Tanzania'], ['en-GH', 'Ghana'], ['en-NZ', 'New Zealand'], ['en-NG', 'Nigeria'], ['en-ZA', 'South Africa'], ['en-PH', 'Philippines'], ['en-GB', 'United Kingdom'], ['en-US', 'United States']],
-                    ['Español', 'es', ['es-AR', 'Argentina'], ['es-BO', 'Bolivia'], ['es-CL', 'Chile'], ['es-CO', 'Colombia'], ['es-CR', 'Costa Rica'], ['es-EC', 'Ecuador'], ['es-SV', 'El Salvador'], ['es-ES', 'España'], ['es-US', 'Estados Unidos'], ['es-GT', 'Guatemala'], ['es-HN', 'Honduras'], ['es-MX', 'México'], ['es-NI', 'Nicaragua'], ['es-PA', 'Panamá'], ['es-PY', 'Paraguay'], ['es-PE', 'Perú'], ['es-PR', 'Puerto Rico'], ['es-DO', 'República Dominicana'], ['es-UY', 'Uruguay'], ['es-VE', 'Venezuela']],
+                    ['English', 'en', ['en-AU', 'Australia'], ['en-CA', 'Canada'], ['en-IN', 'India'],
+                     ['en-KE', 'Kenya'], ['en-TZ', 'Tanzania'], ['en-GH', 'Ghana'], ['en-NZ', 'New Zealand'], ['en-NG', 'Nigeria'], ['en-ZA', 'South Africa'], ['en-PH', 'Philippines'], ['en-GB', 'United Kingdom'], ['en-US', 'United States']],
+                    ['Español', 'es', ['es-AR', 'Argentina'], ['es-BO', 'Bolivia'], ['es-CL', 'Chile'],
+                     ['es-CO', 'Colombia'], ['es-CR', 'Costa Rica'], ['es-EC', 'Ecuador'], ['es-SV', 'El Salvador'], ['es-ES', 'España'], ['es-US', 'Estados Unidos'], ['es-GT', 'Guatemala'], ['es-HN', 'Honduras'], ['es-MX', 'México'], ['es-NI', 'Nicaragua'], ['es-PA', 'Panamá'], ['es-PY', 'Paraguay'], ['es-PE', 'Perú'], ['es-PR', 'Puerto Rico'], ['es-DO', 'República Dominicana'], ['es-UY', 'Uruguay'], ['es-VE', 'Venezuela']],
                     ['Euskara', 'eu', ['eu-ES']],
                     ['Filipino', 'fil', ['fil-PH']],
                     ['Français', 'fr', ['fr-FR']],
@@ -468,7 +475,8 @@ class Collection < ApplicationRecord
                     ['Kiswahili', 'sw', ['sw-TZ', 'Tanzania'], ['sw-KE', 'Kenya']],
                     ['ქართული', 'ka', ['ka-GE']],
                     ['Հայերեն', 'hy', ['hy-AM']],
-                    ['தமிழ்', 'ta', ['ta-IN', 'இந்தியா'], ['ta-SG', 'சிங்கப்பூர்'], ['ta-LK', 'இலங்கை'], ['ta-MY', 'மலேசியா']],
+                    ['தமிழ்', 'ta', ['ta-IN', 'இந்தியா'], ['ta-SG', 'சிங்கப்பூர்'], ['ta-LK', 'இலங்கை'],
+                     ['ta-MY', 'மலேசியா']],
                     ['తెలుగు', 'te', ['te-IN']],
                     ['Tiếng Việt', 'vi', ['vi-VN']],
                     ['Türkçe', 'tr', ['tr-TR']],
@@ -479,7 +487,8 @@ class Collection < ApplicationRecord
                     ['Српски', 'sr', ['sr-RS']],
                     ['Українська', 'uk', ['uk-UA']],
                     ['한국어', 'ko', ['ko-KR']],
-                    ['中文', 'cmn', 'yue', ['cmn-Hans-CN', '普通话 (中国大陆)'], ['cmn-Hans-HK', '普通话 (香港)'], ['cmn-Hant-TW', '中文 (台灣)'], ['yue-Hant-HK', '粵語 (香港)']],
+                    ['中文', 'cmn', 'yue', ['cmn-Hans-CN', '普通话 (中国大陆)'], ['cmn-Hans-HK', '普通话 (香港)'],
+                     ['cmn-Hant-TW', '中文 (台灣)'], ['yue-Hant-HK', '粵語 (香港)']],
                     ['日本語', 'ja', ['ja-JP']],
                     ['हिन्दी', 'hi', ['hi-IN']],
                     ['ภาษาไทย', 'th', ['th-TH']]];
@@ -492,7 +501,7 @@ class Collection < ApplicationRecord
     end
   end
 
-    DEFAULT_HELP_TEXT = <<ENDHELP
+  DEFAULT_HELP_TEXT = <<ENDHELP
     <h2> Transcribing</h2>
     <p> Once you sign up for an account, a new Transcribe tab will appear above each page.</p>
     <p> You can create or edit transcriptions by modifying the text entry field and saving. Each modification is stored as a separate version of the page, so that it should be easy to revert to older versions if necessary.</p>
@@ -520,5 +529,4 @@ ENDHELP
   end
 
   public :user_help
-
 end

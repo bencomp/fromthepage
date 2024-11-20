@@ -5,7 +5,9 @@ class DocumentSetsController < ApplicationController
   respond_to :html
 
   # no layout if xhr request
-  layout Proc.new { |controller| controller.request.xhr? ? false : nil }, only: [:new, :create, :edit, :update, :transfer_form, :edit_set_collaborators, :search_collaborators]
+  layout Proc.new { |controller|
+    controller.request.xhr? ? false : nil
+  }, only: [:new, :create, :edit, :update, :transfer_form, :edit_set_collaborators, :search_collaborators]
 
   def authorized?
     unless user_signed_in? && @collection && current_user.like_owner?(@collection)
@@ -97,7 +99,6 @@ class DocumentSetsController < ApplicationController
     else
       render action: 'new'
     end
-
   end
 
   def assign_works
@@ -120,7 +121,7 @@ class DocumentSetsController < ApplicationController
     unless @collection
       @collection = DocumentSet.friendly.find(params[:collection_id])
     end
-    new_ids = params[:work].keys.map {|id| id.to_i}
+    new_ids = params[:work].keys.map { |id| id.to_i }
     ids = @collection.work_ids + new_ids
     @collection.work_ids = ids
     @collection.save!
@@ -129,7 +130,7 @@ class DocumentSetsController < ApplicationController
 
   def remove_from_set
     @collection = DocumentSet.friendly.find(params[:collection_id])
-    ids = params[:work].keys.map {|id| id.to_i}
+    ids = params[:work].keys.map { |id| id.to_i }
     new_ids = @collection.work_ids - ids
     @collection.work_ids = new_ids
     @collection.save!
@@ -159,9 +160,13 @@ class DocumentSetsController < ApplicationController
   def settings
     # works not yet in document set
     if params[:search]
-      @works = @collection.search_collection_works(params[:search]).where.not(id: @collection.work_ids).order(:title).paginate(page: params[:page], per_page: 20)
+      @works = @collection.search_collection_works(params[:search]).where.not(id: @collection.work_ids).order(:title).paginate(
+        page: params[:page], per_page: 20
+      )
     else
-      @works = @collection.collection.works.where.not(id: @collection.work_ids).order(:title).paginate(page: params[:page], per_page: 20)
+      @works = @collection.collection.works.where.not(id: @collection.work_ids).order(:title).paginate(
+        page: params[:page], per_page: 20
+      )
     end
     # document set edit needs the @document set variable
     @document_set ||= @collection
@@ -216,8 +221,7 @@ class DocumentSetsController < ApplicationController
   end
 
   def document_set_params
-    params.require(:document_set).permit(:is_public, :owner_user_id, :collection_id, :title, :description, :picture, :slug)
+    params.require(:document_set).permit(:is_public, :owner_user_id, :collection_id, :title, :description, :picture,
+                                         :slug)
   end
-
-
 end

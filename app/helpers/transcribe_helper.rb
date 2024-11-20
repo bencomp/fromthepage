@@ -87,19 +87,19 @@ module TranscribeHelper
     else
       if page.sc_canvas
         if page.sc_canvas.sc_service_id
-          service_id = page.sc_canvas.sc_service_id.sub(/\/$/,'')
+          service_id = page.sc_canvas.sc_service_id.sub(/\/$/, '')
           ["#{service_id}/info.json"]
         else
-          [{type: 'image', url: page.sc_canvas.sc_resource_id}]
+          [{ type: 'image', url: page.sc_canvas.sc_resource_id }]
         end
       elsif page.ia_leaf
         # [page.ia_leaf.iiif_image_info_url]
         page.ia_leaf.refresh_cache
-        [{type: 'image', url: file_to_url(page.ia_leaf.cache_file_path)}.to_json]
+        [{ type: 'image', url: file_to_url(page.ia_leaf.cache_file_path) }.to_json]
       elsif browser.platform.ios? && browser.webkit?
         ["#{url_for(:root)}image-service/#{page.id}/info.json"]
       else
-        [{type: 'image', url: file_to_url(page.canonical_facsimile_url)}.to_json]
+        [{ type: 'image', url: file_to_url(page.canonical_facsimile_url) }.to_json]
       end
     end
   end

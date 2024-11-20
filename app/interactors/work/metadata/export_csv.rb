@@ -42,12 +42,12 @@ class Work::Metadata::ExportCsv
   def call
     csv_string = CSV.generate(force_quotes: true) do |csv|
       works_scope = @works.includes(
-                             :document_sets,
-                             :work_statistic,
-                             :sc_manifest,
-                             :deeds,
-                             { metadata_description_versions: :user }
-                           )
+        :document_sets,
+        :work_statistic,
+        :sc_manifest,
+        :deeds,
+        { metadata_description_versions: :user }
+      )
                           .reorder(:id)
 
       raw_metadata_strings = works_scope.pluck(:original_metadata)

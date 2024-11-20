@@ -2,10 +2,9 @@ require 'alto_transformer'
 require 'openai/text_normalizer'
 require 'diff_tools'
 namespace :fromthepage do
-
   desc "Generate AI Plaintext for Pages from ALTO XML"
-  task :generate_ai_plaintext, [:work_id, :diff_level] => :environment do |t,args|
-    diff_level=:none
+  task :generate_ai_plaintext, [:work_id, :diff_level] => :environment do |t, args|
+    diff_level = :none
     if !args.diff_level.nil?
       diff_level = args.diff_level.to_sym
     end
@@ -33,8 +32,8 @@ namespace :fromthepage do
   end
 
   desc "Update initial transcriptions from Alto XML"
-  task :update_transcription_from_alto, [:work_id, :diff_level] => :environment do |t,args|
-    diff_level=:none
+  task :update_transcription_from_alto, [:work_id, :diff_level] => :environment do |t, args|
+    diff_level = :none
     if !args.diff_level.nil?
       diff_level = args.diff_level.to_sym
     end
@@ -83,6 +82,4 @@ namespace :fromthepage do
     end
     plaintext
   end
-
-
 end

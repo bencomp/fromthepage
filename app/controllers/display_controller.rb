@@ -30,9 +30,11 @@ class DisplayController < ApplicationController
         @count = @pages.count
         @heading = t('.pages_need_completion')
       elsif @review == 'transcription'
-        @pages = @work.pages.needs_transcription.order('position').paginate(page: params[:page], per_page: PAGES_PER_SCREEN)
+        @pages = @work.pages.needs_transcription.order('position').paginate(page: params[:page],
+                                                                            per_page: PAGES_PER_SCREEN)
         @count = @pages.count
-        @incomplete_pages = @work.pages.needs_completion.order('position').paginate(page: params[:page], per_page: PAGES_PER_SCREEN)
+        @incomplete_pages = @work.pages.needs_completion.order('position').paginate(page: params[:page],
+                                                                                    per_page: PAGES_PER_SCREEN)
         @incomplete_count = @incomplete_pages.count
         @heading = t('.pages_need_transcription')
       elsif @review == 'index'
@@ -40,7 +42,8 @@ class DisplayController < ApplicationController
         @count = @pages.count
         @heading = t('.pages_need_indexing')
       elsif @review == 'translation'
-        @pages = @work.pages.needs_translation.order('position').paginate(page: params[:page], per_page: PAGES_PER_SCREEN)
+        @pages = @work.pages.needs_translation.order('position').paginate(page: params[:page],
+                                                                          per_page: PAGES_PER_SCREEN)
         @count = @pages.count
         @heading = t('.pages_need_translation')
       elsif @review == 'translation_review'
@@ -57,19 +60,22 @@ class DisplayController < ApplicationController
         @heading = t('.pages')
       end
     end
+
     session[:col_id] = @collection.slug
   end
 
   def read_all_works
     if @article
       # restrict to pages that include that subject
-      @pages = Page.order('work_id, position').joins('INNER JOIN page_article_links pal ON pages.id = pal.page_id').where([ 'pal.article_id = ?', @article.id ]).where(work_id: @collection.works.ids).paginate(page: params[:page], per_page: PAGES_PER_SCREEN)
+      @pages = Page.order('work_id, position').joins('INNER JOIN page_article_links pal ON pages.id = pal.page_id').where(['pal.article_id = ?', @article.id]).where(work_id: @collection.works.ids).paginate(
+        page: params[:page], per_page: PAGES_PER_SCREEN
+      )
       @pages.distinct!
       @heading = t('.pages_that_mention', article: @article.title)
     else
       @pages = Page.paginate :all, :page => params[:page],
-                                        :order => 'work_id, position',
-                                        :per_page => 5
+                                   :order => 'work_id, position',
+                                   :per_page => 5
       @heading = t('.pages')
     end
     session[:col_id] = @collection.slug
@@ -99,16 +105,16 @@ class DisplayController < ApplicationController
       end
       if params[:unlinked_only]
         conditions =
-          ["MATCH(search_text) AGAINST(? IN BOOLEAN MODE)"+
-          " AND pages.id not in "+
-          "    (SELECT page_id FROM page_article_links WHERE article_id = ?)",
-          @search_string,
-          @article.id]
+          ["MATCH(search_text) AGAINST(? IN BOOLEAN MODE)" +
+            " AND pages.id not in " +
+            "    (SELECT page_id FROM page_article_links WHERE article_id = ?)",
+           @search_string,
+           @article.id]
 
       else
         conditions =
           ["MATCH(search_text) AGAINST(? IN BOOLEAN MODE)",
-          @search_string]
+           @search_string]
       end
       @pages = Page.order('work_id, position').joins(:work).where(work_id: @collection.works.ids).where(conditions).paginate(page: params[:page])
     else

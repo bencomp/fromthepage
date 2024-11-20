@@ -4,7 +4,7 @@ module Riiif
 
     def initialize
       @root = ::File.expand_path(::File.join(::File.dirname(__FILE__), '../..'))
-      @base_path = '/home/benwbrum/dev/products/fromthepage/fromthepage/public/images/working/71'#'/opt/repository/images/')
+      @base_path = '/home/benwbrum/dev/products/fromthepage/fromthepage/public/images/working/71' # '/opt/repository/images/')
       @input_types = %W{png jpg}
     end
 
@@ -12,9 +12,9 @@ module Riiif
       raise ArgumentError, "Invalid characters in id `#{id}`" unless /^\d+$/.match(id)
 
       page = Page.find(id.to_i) || raise(ImageNotFoundError, id)
-      
+
       path = path(page.base_image)
-      
+
       Riiif::File.new(path)
     end
 
@@ -23,6 +23,5 @@ module Riiif
       relative_path = filename.sub(/.*public/, "")
       "#{Rails.root}/public/#{relative_path}"
     end
-    
   end
 end

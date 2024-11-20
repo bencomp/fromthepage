@@ -51,6 +51,7 @@ class Flag < ApplicationRecord
     if version.user&.owner? || version.user&.account_type == "Staff"
       return
     end
+
     if snippet = Flagger.check(version.transcription)
       flag = Flag.new
       flag.page_version = version
@@ -66,6 +67,7 @@ class Flag < ApplicationRecord
     if version.user&.owner? || version.user&.account_type == "Staff"
       return
     end
+
     if snippet = Flagger.check(version.source_text)
       flag = Flag.new
       flag.article_version = version
@@ -81,6 +83,7 @@ class Flag < ApplicationRecord
     if note.user&.owner? || note.user.account_type == "Staff"
       return
     end
+
     if snippet = Flagger.check(note.body)
       flag = Flag.new
       flag.note = note
@@ -93,16 +96,17 @@ class Flag < ApplicationRecord
   end
 
   def self.remove_owner_marked_content
-    Flag.all.each do |flag| 
-      if flag.author_user !=nil && flag.author_user.owner? || (flag.author_user !=nil && flag.author_user.account_type == "Staff")
+    Flag.all.each do |flag|
+      if flag.author_user != nil && flag.author_user.owner? || (flag.author_user != nil && flag.author_user.account_type == "Staff")
         flag.delete
       end
     end
   end
 
   def ok_user
-    user=self.author_user
-    Flag.where(:author_user => user).update_all({:auditor_user_id=> User.current_user.id, :status => Status::FALSE_POSITIVE})
+    user = self.author_user
+    Flag.where(:author_user => user).update_all({ :auditor_user_id => User.current_user.id,
+                                                  :status => Status::FALSE_POSITIVE })
   end
 
   def mark_ok!

@@ -1,5 +1,4 @@
 module CollectionHelper
-
   def link
     if params[:works] == 'show'
       @link_title = t('.incomplete_works')
@@ -19,15 +18,15 @@ module CollectionHelper
   end
 
   def all_complete
-    #if the collection is completed transcribed/translated
+    # if the collection is completed transcribed/translated
     if @collection.pct_completed == 100
-      #if it's set to hide completed and the show button hasn't been pressed, don't show
+      # if it's set to hide completed and the show button hasn't been pressed, don't show
       if (@collection.hide_completed) && params[:works] != 'show'
         return true
-      #if the hide button is pressed, don't show
+      # if the hide button is pressed, don't show
       elsif params[:works] == 'hide'
         return true
-      #otherwise do show
+      # otherwise do show
       else
         return false
       end
@@ -44,10 +43,10 @@ module CollectionHelper
       total_review_pages = works.sum('needs_review + translated_review')
       total_completed_pages = works.sum('transcribed_pages + translated_pages')
 
-      @progress_blank = ((total_blank_pages.to_f/total_pages)*100).round
-      @progress_annotated = ((total_annotated_pages.to_f/total_pages)*100).round
-      @progress_review = ((total_review_pages.to_f/total_pages)*100).round
-      @progress_completed = ((total_completed_pages.to_f/total_pages)*100).round
+      @progress_blank = ((total_blank_pages.to_f / total_pages) * 100).round
+      @progress_annotated = ((total_annotated_pages.to_f / total_pages) * 100).round
+      @progress_review = ((total_review_pages.to_f / total_pages) * 100).round
+      @progress_completed = ((total_completed_pages.to_f / total_pages) * 100).round
     else
       @progress_blank = 0
       @progress_annotated = 0
@@ -57,19 +56,19 @@ module CollectionHelper
 
     if collection.subjects_disabled
       unless @progress_review == 0
-        @wording = "#{collection.pct_completed}% #{t('collection.complete')} (#{@progress_completed+@progress_review+@progress_blank}% #{t('collection.transcribed')}, #{@progress_review}% #{t('collection.needs_review')})"
+        @wording = "#{collection.pct_completed}% #{t('collection.complete')} (#{@progress_completed + @progress_review + @progress_blank}% #{t('collection.transcribed')}, #{@progress_review}% #{t('collection.needs_review')})"
       else
-        @wording = "#{collection.pct_completed}% #{t('collection.complete')} (#{@progress_completed+@progress_review+@progress_blank}% #{t('collection.transcribed')})"
+        @wording = "#{collection.pct_completed}% #{t('collection.complete')} (#{@progress_completed + @progress_review + @progress_blank}% #{t('collection.transcribed')})"
       end
     elsif @progress_review == 0
-      @wording = "#{collection.pct_completed}% #{t('collection.complete')} (#{@progress_annotated}% #{t('collection.indexed')}, #{@progress_completed+@progress_blank}% #{t('collection.transcribed')})"
+      @wording = "#{collection.pct_completed}% #{t('collection.complete')} (#{@progress_annotated}% #{t('collection.indexed')}, #{@progress_completed + @progress_blank}% #{t('collection.transcribed')})"
     else
-      @wording = "#{collection.pct_completed}% #{t('collection.complete')} (#{@progress_annotated}% #{t('collection.indexed')}, #{@progress_completed+@progress_review+@progress_blank}% #{t('collection.transcribed')}, #{@progress_review}% #{t('collection.needs_review')})"
+      @wording = "#{collection.pct_completed}% #{t('collection.complete')} (#{@progress_annotated}% #{t('collection.indexed')}, #{@progress_completed + @progress_review + @progress_blank}% #{t('collection.transcribed')}, #{@progress_review}% #{t('collection.needs_review')})"
     end
   end
 
   def work_stats(work)
-    @wording=''
+    @wording = ''
     @progress_blank = work.work_statistic.pct_blank.round
     unless work.supports_translation
       @transcribed_type = nil if @transcribed_type.present?
@@ -91,9 +90,9 @@ module CollectionHelper
 
     if @collection.subjects_disabled
       unless @progress_review == 0
-        @wording = "#{work.work_statistic.complete}% #{t('collection.complete')} (#{@progress_completed+@progress_review}% #{@type}, #{@progress_review}% #{t('collection.needs_review')})"
+        @wording = "#{work.work_statistic.complete}% #{t('collection.complete')} (#{@progress_completed + @progress_review}% #{@type}, #{@progress_review}% #{t('collection.needs_review')})"
       else
-        @wording = "#{work.work_statistic.complete}% #{t('collection.complete')} (#{@progress_completed+@progress_review}% #{@type})"
+        @wording = "#{work.work_statistic.complete}% #{t('collection.complete')} (#{@progress_completed + @progress_review}% #{@type})"
       end
     elsif @progress_review == 0
       if @transcribed_type.present?
@@ -102,7 +101,7 @@ module CollectionHelper
         @wording = "#{work.work_statistic.complete}% #{t('collection.complete')} (#{@progress_annotated}% #{t('collection.indexed')}, #{@progress_completed}% #{@type})"
       end
     else
-      @wording = "#{work.work_statistic.complete}% #{t('collection.complete')} (#{@progress_annotated}% #{t('collection.indexed')}, #{@progress_completed+@progress_review}% #{@type}, #{@progress_review}% #{t('collection.needs_review')})"
+      @wording = "#{work.work_statistic.complete}% #{t('collection.complete')} (#{@progress_annotated}% #{t('collection.indexed')}, #{@progress_completed + @progress_review}% #{@type}, #{@progress_review}% #{t('collection.needs_review')})"
     end
 
     if @collection.metadata_entry?
@@ -112,32 +111,33 @@ module CollectionHelper
   end
 
   def find_transcribe_pages
-   #find works with deeds in the last 48 hours (not including add the work)
-   active_works = Deed.where.not(deed_type: DeedType::WORK_ADDED).where('created_at >= ?', 48.hours.ago).where(collection_id: @collection.id).distinct.pluck(:work_id)
-    #get work ids for the rest of the works
+    # find works with deeds in the last 48 hours (not including add the work)
+    active_works = Deed.where.not(deed_type: DeedType::WORK_ADDED).where('created_at >= ?',
+                                                                         48.hours.ago).where(collection_id: @collection.id).distinct.pluck(:work_id)
+    # get work ids for the rest of the works
     inactive_works = @collection.works.unrestricted.pluck(:id) - active_works
-    #find pages in those works that aren't transcribed
+    # find pages in those works that aren't transcribed
     pages = Page.where(work_id: inactive_works).needs_transcription
     return pages
   end
 
   def find_untranscribed_page
     # Get first untranscribed work
-    untranscribed_works = @collection.works.joins(:work_statistic).where(work_statistics: {complete: 0})
+    untranscribed_works = @collection.works.joins(:work_statistic).where(work_statistics: { complete: 0 })
 
-    if untranscribed_works.any?{|w| w.untranscribed?}
-      work_ids = untranscribed_works.select{|w| w.untranscribed?}
+    if untranscribed_works.any? { |w| w.untranscribed? }
+      work_ids = untranscribed_works.select { |w| w.untranscribed? }
     else
       work_ids = @collection.works.incomplete_transcription.order_by_recent_inactivity
     end
-    Page.where({work_id: work_ids})
-      .needs_transcription
-      .reorder('position ASC')
-      .first
+    Page.where({ work_id: work_ids })
+        .needs_transcription
+        .reorder('position ASC')
+        .first
   end
 
   def any_public_collections_with_document_sets?(collections_and_doc_sets)
-    collections = collections_and_doc_sets.select { |c_or_ds| c_or_ds.class == Collection}
+    collections = collections_and_doc_sets.select { |c_or_ds| c_or_ds.class == Collection }
     collections.any? { |c| c.is_public && c.supports_document_sets }
   end
 

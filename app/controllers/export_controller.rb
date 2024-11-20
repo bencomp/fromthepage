@@ -183,7 +183,10 @@ class ExportController < ApplicationController
     FileUtils.mkdir_p(File.dirname(log_file)) unless Dir.exist? File.dirname(log_file)
     cmd = "rake fromthepage:cdm_transcript_export[#{@collection.id}] > #{log_file} 2>&1 &"
     logger.info(cmd)
-    system({ 'contentdm_username' => contentdm_user_name, 'contentdm_password' => contentdm_password, 'contentdm_license' => license_key }, cmd)
+    system(
+      { 'contentdm_username' => contentdm_user_name, 'contentdm_password' => contentdm_password,
+        'contentdm_license' => license_key }, cmd
+    )
 
     # display results somehow
     flash[:notice] = t('.updating_contentdm_message')
@@ -253,5 +256,4 @@ class ExportController < ApplicationController
       @work_stats_hash_map[work.id][key]
     end.pluck(:id)
   end
-
 end

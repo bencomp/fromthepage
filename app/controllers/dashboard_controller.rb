@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 class DashboardController < ApplicationController
   include AddWorkHelper
   include DashboardHelper
@@ -6,11 +7,11 @@ class DashboardController < ApplicationController
   PAGES_PER_SCREEN = 20
 
   before_action :authorized?,
-    only: [:owner, :staging, :startproject, :summary]
+                only: [:owner, :staging, :startproject, :summary]
 
   before_action :get_data,
-    only: [:owner, :staging, :upload, :new_upload,
-           :startproject, :empty_work, :create_work, :summary, :exports]
+                only: [:owner, :staging, :upload, :new_upload,
+                       :startproject, :empty_work, :create_work, :summary, :exports]
 
   before_action :remove_col_id
 
@@ -34,7 +35,6 @@ class DashboardController < ApplicationController
     end
   end
 
-
   # Public Dashboard - list of all collections
   def index
     if Collection.all.count > 1000
@@ -44,7 +44,7 @@ class DashboardController < ApplicationController
     end
   end
 
-  def collections_list(private_only=false)
+  def collections_list(private_only = false)
     if private_only
       cds = []
     else
@@ -60,7 +60,7 @@ class DashboardController < ApplicationController
       cds |= current_user.collection_collaborations.includes(:owner, next_untranscribed_page: :work)
       cds |= current_user.document_set_collaborations.includes(:owner, next_untranscribed_page: :work)
     end
-    @collections_and_document_sets = cds.sort { |a,b| a.slug <=> b.slug }
+    @collections_and_document_sets = cds.sort { |a, b| a.slug <=> b.slug }
   end
 
   # Owner Dashboard - start project
@@ -83,14 +83,14 @@ class DashboardController < ApplicationController
 
   def download_hours_letter
     load_user_hours_data
-    @time_duration=params[:time_duration]
+    @time_duration = params[:time_duration]
     markdown_text = generate_markdown_text
 
     # write the string to a temp directory
     temp_dir = File.join(Rails.root, 'public', 'printable')
     Dir.mkdir(temp_dir) unless Dir.exist? temp_dir
 
-    time_stub = Time.now.gmtime.iso8601.gsub(/\D/,'')
+    time_stub = Time.now.gmtime.iso8601.gsub(/\D/, '')
     temp_dir = File.join(temp_dir, time_stub)
     Dir.mkdir(temp_dir) unless Dir.exist? temp_dir
 
@@ -128,45 +128,46 @@ class DashboardController < ApplicationController
     @subjects_disabled = @statistics_object.collections.all?(&:subjects_disabled)
 
     # Stats
-    owner_collections = current_user.all_owner_collections.map{ |c| c.id }
+    owner_collections = current_user.all_owner_collections.map { |c| c.id }
     contributor_ids_for_dates = AhoyActivitySummary
-        .where(collection_id: owner_collections)
-        .where('date BETWEEN ? AND ?', @start_date, @end_date).distinct.pluck(:user_id)
+                                .where(collection_id: owner_collections)
+                                .where('date BETWEEN ? AND ?', @start_date, @end_date).distinct.pluck(:user_id)
 
     @contributors = User.where(id: contributor_ids_for_dates).order(:display_name)
 
     @activity = AhoyActivitySummary
-        .where(collection_id: owner_collections)
-        .where('date BETWEEN ? AND ?', @start_date, @end_date)
-        .group(:user_id)
-        .sum(:minutes)
+                .where(collection_id: owner_collections)
+                .where('date BETWEEN ? AND ?', @start_date, @end_date)
+                .group(:user_id)
+                .sum(:minutes)
   end
 
   # Collaborator Dashboard - watchlist
   def watchlist
     works = Work.joins(:deeds).where(deeds: { user_id: current_user.id }).distinct
-    recent_collections = Collection.joins(:deeds).where(deeds: { user_id: current_user.id }).where('deeds.created_at > ?', Time.now-2.days).distinct.order_by_recent_activity.limit(5)
+    recent_collections = Collection.joins(:deeds).where(deeds: { user_id: current_user.id }).where(
+      'deeds.created_at > ?', Time.now - 2.days
+    ).distinct.order_by_recent_activity.limit(5)
     collections = Collection.where(id: current_user.ahoy_activity_summaries.pluck(:collection_id)).distinct.order_by_recent_activity.limit(5)
     document_sets = DocumentSet.joins(works: :deeds).where(works: { id: works.ids }).order('deeds.created_at DESC').distinct.limit(5)
     collections_list(true) # assigns @collections_and_document_sets for private collections only
     @collections = (collections + recent_collections + document_sets)
-               .uniq
-               .sort_by do |collection|
-                 if collection.is_a?(Collection)
-                   collection.created_on
-                 elsif collection.is_a?(DocumentSet)
-                   collection.created_at
-                 end
-               end
+                   .uniq
+                   .sort_by do |collection|
+      if collection.is_a?(Collection)
+        collection.created_on
+      elsif collection.is_a?(DocumentSet)
+        collection.created_at
+      end
+    end
                .reverse
                .take(10)
   end
 
-
   def exports
-    @bulk_exports = current_user.bulk_exports.order('id DESC').paginate :page => params[:page], :per_page => PAGES_PER_SCREEN
+    @bulk_exports = current_user.bulk_exports.order('id DESC').paginate :page => params[:page],
+                                                                        :per_page => PAGES_PER_SCREEN
   end
-
 
   # Collaborator Dashboard - activity
   def editor
@@ -233,15 +234,14 @@ class DashboardController < ApplicationController
       "Email",
     ]
 
-    headers += dates.map{|d| d.strftime("%b %d, %Y")}
+    headers += dates.map { |d| d.strftime("%b %d, %Y") }
 
     # Get Row Data (Users)
-    owner_collections = current_user.all_owner_collections.map{ |c| c.id }
-
+    owner_collections = current_user.all_owner_collections.map { |c| c.id }
 
     contributor_ids_for_dates = AhoyActivitySummary
-      .where(collection_id: owner_collections)
-      .where('date BETWEEN ? AND ?', start_date, end_date).distinct.pluck(:user_id)
+                                .where(collection_id: owner_collections)
+                                .where('date BETWEEN ? AND ?', start_date, end_date).distinct.pluck(:user_id)
 
     contributors = User.where(id: contributor_ids_for_dates).order(:display_name)
 
@@ -251,14 +251,14 @@ class DashboardController < ApplicationController
         row = [user.display_name, user.email]
 
         activity = AhoyActivitySummary
-          .where(user_id: user.id)
-          .where(collection_id: owner_collections)
-          .where('date BETWEEN ? AND ?', start_date, end_date)
-          .group(:date)
-          .sum(:minutes)
-          .transform_keys{ |k| k.to_date }
+                   .where(user_id: user.id)
+                   .where(collection_id: owner_collections)
+                   .where('date BETWEEN ? AND ?', start_date, end_date)
+                   .group(:date)
+                   .sum(:minutes)
+                   .transform_keys { |k| k.to_date }
 
-        user_activity = dates.map{ |d| activity[d.to_date] || 0 }
+        user_activity = dates.map { |d| activity[d.to_date] || 0 }
 
         row += user_activity
 
@@ -266,7 +266,7 @@ class DashboardController < ApplicationController
       end
     end
 
-    send_data( csv,
+    send_data(csv,
               :filename => "#{start_date.strftime('%Y-%m%b-%d')}-#{end_date.strftime('%Y-%m%b-%d')}_activity_summary.csv",
               :type => "application/csv")
   end
@@ -291,9 +291,14 @@ class DashboardController < ApplicationController
     end
     @time_duration = time_spent_in_date_range(current_user.id, @start_date_hours, @end_date_hours)
 
-    raw = Deed.where(user_id: current_user.id, created_at: [@start_date_hours..@end_date_hours]).pluck(:collection_id, :page_id).uniq
-    @collection_id_to_page_count = raw.select{|collection_id, page_id| !page_id.nil? }.map{|collection_id, page_id| collection_id}.tally
-    @user_collections = Collection.find(@collection_id_to_page_count.keys).sort{|a,b| a.owner.display_name <=> b.owner.display_name}
+    raw = Deed.where(user_id: current_user.id, created_at: [@start_date_hours..@end_date_hours]).pluck(:collection_id,
+                                                                                                       :page_id).uniq
+    @collection_id_to_page_count = raw.select { |collection_id, page_id|
+      !page_id.nil?
+    }.map { |collection_id, page_id| collection_id }.tally
+    @user_collections = Collection.find(@collection_id_to_page_count.keys).sort { |a, b|
+      a.owner.display_name <=> b.owner.display_name
+    }
   end
 
   def generate_markdown_text
@@ -336,8 +341,8 @@ class DashboardController < ApplicationController
   def send_generated_pdf(output_path)
     # spew the output to the browser
     send_data(File.read(output_path),
-      filename: File.basename("letter.pdf"),
-      :content_type => "application/pdf")
+              filename: File.basename("letter.pdf"),
+              :content_type => "application/pdf")
     cookies['download_finished'] = 'true'
   end
 

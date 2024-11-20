@@ -58,5 +58,4 @@ class DocumentUpload < ApplicationRecord
   def upload_dir
     File.dirname(self.file.path)
   end
-
 end

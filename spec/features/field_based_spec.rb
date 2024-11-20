@@ -103,7 +103,7 @@ describe "collection settings js tasks", :order => :defined do
 
   it "uses page arrows with unsaved transcription", :js => true do
     test_page = @collection.works.first.pages.second
-    #next page arrow
+    # next page arrow
     visit collection_transcribe_page_path(@collection.owner, @collection, test_page.work, test_page)
     page.fill_in('fields_1_first-field', with: "Field one")
     message = accept_alert do
@@ -112,7 +112,7 @@ describe "collection settings js tasks", :order => :defined do
     sleep(3)
     expect(message).to have_content("You have unsaved changes.")
     visit collection_transcribe_page_path(@collection.owner, @collection, test_page.work, test_page)
-    #previous page arrow - make sure it also works with notes
+    # previous page arrow - make sure it also works with notes
     fill_in('Write a new note or ask a question...', with: "Test two")
     message = accept_alert do
       page.click_link("Previous page")
@@ -121,7 +121,7 @@ describe "collection settings js tasks", :order => :defined do
     expect(message).to have_content("You have unsaved changes.")
   end
 
-  #note: these are hidden unless there is table data
+  # note: these are hidden unless there is table data
   it "exports a table csv" do
     work = @collection.works.first
     visit collection_export_path(@collection.owner, @collection)
@@ -131,7 +131,6 @@ describe "collection settings js tasks", :order => :defined do
     expect(page.response_headers['Content-Type']).to eq 'text/csv'
   end
 
-
   it "sets collection back to document based transcription", js: true do
     visit collection_path(@collection.owner, @collection)
     page.find('.tabs').click_link("Settings")
@@ -140,5 +139,4 @@ describe "collection settings js tasks", :order => :defined do
     expect(page.find_link('Edit Fields')).to match_css('[disabled]')
     expect(page.find_link('Configure Buttons')).to_not match_css('[disabled]')
   end
-
 end

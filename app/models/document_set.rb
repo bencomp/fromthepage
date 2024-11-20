@@ -42,7 +42,7 @@ class DocumentSet < ApplicationRecord
   has_many :pages, through: :works
   has_many :articles, -> { distinct }, through: :pages
   has_many :notes, -> { order(created_at: :desc) }, through: :works
-  has_many :deeds, -> (document_set) {
+  has_many :deeds, ->(document_set) {
     where(work_id: document_set.works.select(:id))
       .includes(:work)
       .reorder('deeds.created_at DESC')
@@ -185,7 +185,7 @@ class DocumentSet < ApplicationRecord
                          .restricted
                          .order_by_incomplete
 
-    wk = private_works.find{ |w| user.can_transcribe?(w) }
+    wk = private_works.find { |w| user.can_transcribe?(w) }
 
     wk&.next_untranscribed_page
   end

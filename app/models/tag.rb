@@ -18,13 +18,12 @@ class Tag < ApplicationRecord
   def self.featured_tags
     joins(:collections).where(canonical: true).merge(Collection.unrestricted.has_intro_block.has_picture.not_empty)
   end
-    
 
   module TagType
-    DATE='date'
-    LANGUAGE='language'
-    SUBJECT='subject'
-    TASK='task'
+    DATE = 'date'
+    LANGUAGE = 'language'
+    SUBJECT = 'subject'
+    TASK = 'task'
   end
 
   TAG_TYPES = [
@@ -33,7 +32,6 @@ class Tag < ApplicationRecord
     TagType::SUBJECT,
     TagType::TASK
   ]
-
 
   def self.tag_by_subject(description, title)
     # get the subject tags
@@ -44,9 +42,6 @@ class Tag < ApplicationRecord
 
     canonical_tags
   end
-
-
-
 
   # create a new tag record from a string
   def self.create_from_string(tag_string, tag_type)
@@ -59,7 +54,6 @@ class Tag < ApplicationRecord
     tag
   end
 
-
   # find a tag record from a string
   def self.find_from_string(tag_string, tag_type)
     tag = Tag.where(tag_type: tag_type, ai_text: tag_string).first
@@ -69,7 +63,6 @@ class Tag < ApplicationRecord
     tag
   end
 
-
   # take a list of string tags, and return a list of tag records
   def self.find_from_string_list(tag_string_list, tag_type)
     tag_list = []
@@ -78,6 +71,4 @@ class Tag < ApplicationRecord
     end
     tag_list
   end
-
-
 end

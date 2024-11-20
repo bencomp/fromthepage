@@ -10,13 +10,13 @@ class ContactController < ApplicationController
 
   def send_email
     render
-    unless params[email_param].blank? 
+    unless params[email_param].blank?
       ContactMailer.contact(
         first_name: params[:first_name],
-        last_name:  params[:last_name],
-        email:      params[email_param],
-        reason:     params[:reason],
-        more:       params[:more]
+        last_name: params[:last_name],
+        email: params[email_param],
+        reason: params[:reason],
+        more: params[:more]
       ).deliver!
     end
   end

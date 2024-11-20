@@ -30,7 +30,6 @@ RSpec.describe AbstractXmlHelper, type: :helper do
     expect(xml_to_html(@xml_text, true, true)).to include(@a_tag_with_attr)
   end
 
-
   context "with params" do
     let(:params) { { action: "read_work" } }
 

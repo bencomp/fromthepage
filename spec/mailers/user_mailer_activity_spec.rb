@@ -9,12 +9,12 @@ RSpec.describe UserMailer::Activity do
       @work = create(:work, collection_id: @collection.id)
       @page = create(:page, work_id: @work.id)
       @author_deed = create(:deed, {
-        deed_type: DeedType::WORK_ADDED,
-        page_id: @page.id,
-        work_id: @work.id,
-        collection_id: @collection.id,
-        user_id: @author.id
-      })
+                              deed_type: DeedType::WORK_ADDED,
+                              page_id: @page.id,
+                              work_id: @work.id,
+                              collection_id: @collection.id,
+                              user_id: @author.id
+                            })
     end
 
     after :each do
@@ -37,24 +37,24 @@ RSpec.describe UserMailer::Activity do
 
     it "stores works added to a user's collection as an attribute" do
       @contributor_deed = create(:deed, {
-        deed_type: DeedType::WORK_ADDED,
-        page_id: @page.id,
-        work_id: @work.id,
-        collection_id: @collection.id,
-        user_id: @contributor.id
-      })
+                                   deed_type: DeedType::WORK_ADDED,
+                                   page_id: @page.id,
+                                   work_id: @work.id,
+                                   collection_id: @collection.id,
+                                   user_id: @contributor.id
+                                 })
       activity = UserMailer::Activity.build(@author)
       expect(activity.added_works).to include(@work)
     end
 
     it 'stores pages with notes added as an attribute' do
       @contributor_deed = create(:deed, {
-        deed_type: DeedType::NOTE_ADDED,
-        page_id: @page.id,
-        work_id: @work.id,
-        collection_id: @collection.id,
-        user_id: @contributor.id
-      })
+                                   deed_type: DeedType::NOTE_ADDED,
+                                   page_id: @page.id,
+                                   work_id: @work.id,
+                                   collection_id: @collection.id,
+                                   user_id: @contributor.id
+                                 })
       activity = UserMailer::Activity.build(@author)
       expect(activity.active_note_pages).to include(@page)
     end
@@ -68,12 +68,12 @@ RSpec.describe UserMailer::Activity do
       @work = create(:work, collection_id: @collection.id)
       @page = create(:page, work_id: @work.id)
       @author_deed = create(:deed, {
-        deed_type: DeedType::WORK_ADDED,
-        page_id: @page.id,
-        work_id: @work.id,
-        collection_id: @collection.id,
-        user_id: @author.id
-      })
+                              deed_type: DeedType::WORK_ADDED,
+                              page_id: @page.id,
+                              work_id: @work.id,
+                              collection_id: @collection.id,
+                              user_id: @author.id
+                            })
     end
 
     after :each do
@@ -92,12 +92,12 @@ RSpec.describe UserMailer::Activity do
     context 'when it has added_works' do
       it 'returns true' do
         @contributor_deed = create(:deed, {
-          deed_type: DeedType::WORK_ADDED,
-          page_id: @page.id,
-          work_id: @work.id,
-          collection_id: @collection.id,
-          user_id: @contributor.id
-        })
+                                     deed_type: DeedType::WORK_ADDED,
+                                     page_id: @page.id,
+                                     work_id: @work.id,
+                                     collection_id: @collection.id,
+                                     user_id: @contributor.id
+                                   })
         activity_author = UserMailer::Activity.build(@author)
         expect(activity_author.has_contributions?).to be true
 
@@ -109,12 +109,12 @@ RSpec.describe UserMailer::Activity do
     context 'when it has active_note_pages' do
       it 'returns true' do
         @contributor_deed = create(:deed, {
-          deed_type: DeedType::NOTE_ADDED,
-          page_id: @page.id,
-          work_id: @work.id,
-          collection_id: @collection.id,
-          user_id: @contributor.id
-        })
+                                     deed_type: DeedType::NOTE_ADDED,
+                                     page_id: @page.id,
+                                     work_id: @work.id,
+                                     collection_id: @collection.id,
+                                     user_id: @contributor.id
+                                   })
         activity_author = UserMailer::Activity.build(@author)
         expect(activity_author.has_contributions?).to be true
 
@@ -126,12 +126,12 @@ RSpec.describe UserMailer::Activity do
     context 'when it has added_works but contributor has no access' do
       it 'returns true for author, false for contributor' do
         @contributor_deed = create(:deed, {
-          deed_type: DeedType::WORK_ADDED,
-          page_id: @page.id,
-          work_id: @work.id,
-          collection_id: @collection.id,
-          user_id: @contributor.id
-        })
+                                     deed_type: DeedType::WORK_ADDED,
+                                     page_id: @page.id,
+                                     work_id: @work.id,
+                                     collection_id: @collection.id,
+                                     user_id: @contributor.id
+                                   })
 
         @collection.update!(restricted: true)
         @work.update!(restrict_scribes: true)

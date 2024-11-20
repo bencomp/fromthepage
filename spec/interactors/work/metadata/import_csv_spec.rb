@@ -158,7 +158,8 @@ describe Work::Metadata::ImportCsv do
     expect(result.rowset_errors).to include(
       # Case work 3, different collection
       {
-        error: I18n.t('metadata.import_csv.errors.not_in_collection', work_id: work_3.id, collection_title: collection.title),
+        error: I18n.t('metadata.import_csv.errors.not_in_collection', work_id: work_3.id,
+                                                                      collection_title: collection.title),
         work_id: work_3.id.to_s,
         title: work_3.title
       },

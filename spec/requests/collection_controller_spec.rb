@@ -94,7 +94,9 @@ describe CollectionController do
     end
 
     context 'when one work with custom transcription convention' do
-      let!(:work) { create(:work, collection: collection, owner_user_id: owner.id, transcription_conventions: 'Custom') }
+      let!(:work) {
+        create(:work, collection: collection, owner_user_id: owner.id, transcription_conventions: 'Custom')
+      }
 
       it 'renders status and template' do
         login_as owner

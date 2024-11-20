@@ -8,7 +8,7 @@ class ContactMailer < ActionMailer::Base
     @reason = reason
     @more = more
 
-    mail to:      ADMIN_EMAILS,
+    mail to: ADMIN_EMAILS,
          subject: "New contact us form submission from #{email}"
   end
 end

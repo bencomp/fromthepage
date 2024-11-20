@@ -6,7 +6,9 @@ class AdminController < ApplicationController
   PAGES_PER_SCREEN = 20
 
   # no layout if xhr request
-  layout Proc.new { |controller| controller.request.xhr? ? false : nil }, :only => [:edit_user, :update_user, :new_owner, :expunge_confirmation, :expunge_user]
+  layout Proc.new { |controller|
+    controller.request.xhr? ? false : nil
+  }, :only => [:edit_user, :update_user, :new_owner, :expunge_confirmation, :expunge_user]
 
   def authorized?
     unless user_signed_in? && current_user.admin
@@ -38,18 +40,21 @@ class AdminController < ApplicationController
     @contribution_counts = {}
     @activity_project_counts = {}
     @unique_contributor_counts = {}
-    @week_intervals=[1,2,4,12,26,52,104,156,208]
+    @week_intervals = [1, 2, 4, 12, 26, 52, 104, 156, 208]
     @week_intervals.each do |weeks_ago|
       start_date = Date.yesterday - weeks_ago.weeks
       end_date = start_date + 1.week
-      @transcription_counts[weeks_ago] = transcription_deeds.where("created_at between ? and ?", start_date, end_date).count
-      @contribution_counts[weeks_ago] = contributor_deeds.where("created_at between ? and ?", start_date, end_date).count
-      @activity_project_counts[weeks_ago] = contributor_deeds.where("created_at between ? and ?", start_date, end_date).distinct.count(:collection_id)
-      @unique_contributor_counts[weeks_ago] = contributor_deeds.where("created_at between ? and ?", start_date, end_date).distinct.count(:user_id)
+      @transcription_counts[weeks_ago] =
+        transcription_deeds.where("created_at between ? and ?", start_date, end_date).count
+      @contribution_counts[weeks_ago] =
+        contributor_deeds.where("created_at between ? and ?", start_date, end_date).count
+      @activity_project_counts[weeks_ago] =
+        contributor_deeds.where("created_at between ? and ?", start_date, end_date).distinct.count(:collection_id)
+      @unique_contributor_counts[weeks_ago] =
+        contributor_deeds.where("created_at between ? and ?", start_date, end_date).distinct.count(:user_id)
     end
 
     @version = ActiveRecord::Migrator.current_version
-
 
 =begin
     sql_online =
@@ -64,7 +69,8 @@ class AdminController < ApplicationController
 
   def user_list
     if params[:search]
-      @users = User.search(params[:search]).order(created_at: :desc).paginate :page => params[:page], :per_page => PAGES_PER_SCREEN
+      @users = User.search(params[:search]).order(created_at: :desc).paginate :page => params[:page],
+                                                                              :per_page => PAGES_PER_SCREEN
     else
       @users = User.order(created_at: :desc).paginate :page => params[:page], :per_page => PAGES_PER_SCREEN
     end
@@ -114,7 +120,7 @@ class AdminController < ApplicationController
 
   def delete_user
     @user.soft_delete
-    #@user.destroy
+    # @user.destroy
     flash[:notice] = t('.user_profile_deleted')
     redirect_to :action => 'user_list'
   end
@@ -128,13 +134,13 @@ class AdminController < ApplicationController
     if params[:flag_id]
       ajax_redirect_to :action => 'revert_flag', :flag_id => params[:flag_id]
     else
-      ajax_redirect_to :action => 'user_list'  # what if we came from the flag list?  TODO
+      ajax_redirect_to :action => 'user_list' # what if we came from the flag list?  TODO
     end
   end
 
-
   def flag_list
-    @flags = Flag.where(:status => Flag::Status::UNCONFIRMED).order(:content_at => :desc).paginate :page => params[:page], :per_page => PAGES_PER_SCREEN
+    @flags = Flag.where(:status => Flag::Status::UNCONFIRMED).order(:content_at => :desc).paginate :page => params[:page],
+                                                                                                   :per_page => PAGES_PER_SCREEN
   end
 
   def revert_flag
@@ -164,7 +170,7 @@ class AdminController < ApplicationController
   def tail_logfile
     @lines = params[:lines].to_i
     if @lines == 0
-      @lines=5000
+      @lines = 5000
     end
     development_logfile = "#{Rails.root}/log/development.log"
     production_logfile = "#{Rails.root}/log/production.log"
@@ -229,7 +235,7 @@ class AdminController < ApplicationController
   end
 
   def update
-    #need the original email text to update
+    # need the original email text to update
     block = PageBlock.find_by(view: "new_owner")
     if params[:admin][:welcome_text] != block.html
       block.html = params[:admin][:welcome_text]
@@ -248,7 +254,6 @@ class AdminController < ApplicationController
       block.save!
     end
 
-
     flash[:notice] = t('.admin_settings_updated')
 
     redirect_to action: 'settings'
@@ -256,15 +261,19 @@ class AdminController < ApplicationController
 
   def owner_list
     @collections = Collection.all
-    #@owners = User.where(owner: true).order(paid_date: :desc).paginate(:page => params[:page], :per_page => PAGES_PER_SCREEN)
+    # @owners = User.where(owner: true).order(paid_date: :desc).paginate(:page => params[:page], :per_page => PAGES_PER_SCREEN)
     if params[:search]
-      @owners = User.search(params[:search]).where(owner: true).order(paid_date: :desc).paginate(:page => params[:page], :per_page => PAGES_PER_SCREEN)
+      @owners = User.search(params[:search]).where(owner: true).order(paid_date: :desc).paginate(
+        :page => params[:page], :per_page => PAGES_PER_SCREEN
+      )
     elsif params[:sort]
       sort = params[:sort]
       dir = params[:dir].upcase
-      @owners = User.where(owner: true).order("#{sort} #{dir}").paginate(:page => params[:page], :per_page => PAGES_PER_SCREEN)
+      @owners = User.where(owner: true).order("#{sort} #{dir}").paginate(:page => params[:page],
+                                                                         :per_page => PAGES_PER_SCREEN)
     else
-      @owners = User.where(owner: true).order(created_at: :desc).paginate(:page => params[:page], :per_page => PAGES_PER_SCREEN)
+      @owners = User.where(owner: true).order(created_at: :desc).paginate(:page => params[:page],
+                                                                          :per_page => PAGES_PER_SCREEN)
     end
   end
 
@@ -275,7 +284,7 @@ class AdminController < ApplicationController
   end
 
   def moderation
-    @collections = Collection.where(messageboards_enabled:true)
+    @collections = Collection.where(messageboards_enabled: true)
   end
 
   def searches
@@ -304,9 +313,13 @@ class AdminController < ApplicationController
       @find_a_project_average_hits = this_week.where(search_type: 'findaproject').average(:hits).round(2)
       @collection_work_average_hits = this_week.where.not(search_type: 'findaproject').average(:hits).round(2)
       @clickthrough_rate = ((this_week.where('clicks > 0').count.to_f / this_week.count) * 100).round(1)
-      @clickthrough_rate_visit = ((by_visit.sum(:clicks).values.count{|c|c>0}.to_f / by_visit.length) * 100).round(1)
+      @clickthrough_rate_visit = ((by_visit.sum(:clicks).values.count { |c|
+        c > 0
+      }.to_f / by_visit.length) * 100).round(1)
       @contribution_rate = ((this_week.where('contributions > 0').count.to_f / this_week.count) * 100).round(1)
-      @contribution_rate_visit = ((by_visit.sum(:contributions).values.count{|c|c>0}.to_f / by_visit.length) * 100).round(1)
+      @contribution_rate_visit = ((by_visit.sum(:contributions).values.count { |c|
+        c > 0
+      }.to_f / by_visit.length) * 100).round(1)
     end
 
     start_d = params[:start_date]
@@ -328,11 +341,10 @@ class AdminController < ApplicationController
     @tag = Tag.find params[:tag_id]
     @collections = @tag.collections.order(:title)
     @possible_duplicates = []
-    clean_text = @tag.ai_text.gsub(/^\W*/,'').gsub(/\W*$/,'')
+    clean_text = @tag.ai_text.gsub(/^\W*/, '').gsub(/\W*$/, '')
     Tag.where("regexp_replace(upper(ai_text), '[^A-Z0-9]', '') like regexp_replace(upper('%#{clean_text}%'), '[^A-Z0-9]', '')").each do |t|
       @possible_duplicates << t unless t == @tag
     end
-
   end
 
   def edit_tag
@@ -365,10 +377,10 @@ class AdminController < ApplicationController
   end
 
   private
+
   def tag_params
     params.require(:tag).permit(:ai_text, :canonical, :tag_type)
   end
-
 
   def user_params
     params.require(:user).permit(:real_name, :login, :email, :account_type, :start_date, :paid_date, :user, :owner)

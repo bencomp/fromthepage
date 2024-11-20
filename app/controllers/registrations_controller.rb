@@ -1,5 +1,4 @@
 class RegistrationsController < Devise::RegistrationsController
-
   def new
     super
   end
@@ -18,7 +17,7 @@ class RegistrationsController < Devise::RegistrationsController
     Devise.sign_out_all_scopes ? sign_out : sign_out(resource_name)
     set_flash_message :notice, :destroyed if is_flashing_format?
     yield resource if block_given?
-    respond_with_navigational(resource){ redirect_to after_sign_out_path_for(resource_name)}
+    respond_with_navigational(resource) { redirect_to after_sign_out_path_for(resource_name) }
   end
 
   def create
@@ -80,8 +79,8 @@ class RegistrationsController < Devise::RegistrationsController
     @user.email = sign_up_params[:email]
     @user.real_name = sign_up_params[:real_name]
     unless sign_up_params[:password].blank?
-      @user.password=sign_up_params[:password]
-      @user.password_confirmation=sign_up_params[:password_confirmation]
+      @user.password = sign_up_params[:password]
+      @user.password_confirmation = sign_up_params[:password_confirmation]
     end
 
     if @user.save
@@ -95,7 +94,7 @@ class RegistrationsController < Devise::RegistrationsController
 
   def set_saml
     institution = saml_provider_param
-    redirect_to user_omniauth_authorize_path(institution)  #go to users/auth/saml/instution_name
+    redirect_to user_omniauth_authorize_path(institution) # go to users/auth/saml/instution_name
   end
 
   def choose_saml
@@ -103,11 +102,12 @@ class RegistrationsController < Devise::RegistrationsController
 
   def alert_bento()
     if defined?(BENTO_ENABLED) && BENTO_ENABLED
-      $bento.track(identity: {email: current_user.email}, event: '$action', details: {action_information: "signed_up_for_trial"})
+      $bento.track(identity: { email: current_user.email }, event: '$action',
+                   details: { action_information: "signed_up_for_trial" })
     end
   end
 
-  #redirect new sign up back to starting page
+  # redirect new sign up back to starting page
   def after_sign_up_path_for(resource)
     if @user.owner
       # Always send new owners to their dashboard for analytics purposes
@@ -139,13 +139,15 @@ class RegistrationsController < Devise::RegistrationsController
 
   def check_recaptcha(options)
     return verify_recaptcha(options) if RECAPTCHA_ENABLED
+
     true
   end
 
   private
 
   def sign_up_params
-    params.require(:user).permit(:login, :real_name, :owner, :activity_email, :paid_date, :display_name, :email, :password, :password_confirmation)
+    params.require(:user).permit(:login, :real_name, :owner, :activity_email, :paid_date, :display_name, :email,
+                                 :password, :password_confirmation)
   end
 
   def saml_provider_param
@@ -168,6 +170,4 @@ class RegistrationsController < Devise::RegistrationsController
       state_archives_path
     ]
   end
-
-
 end

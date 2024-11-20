@@ -8,9 +8,8 @@ class AdminMailer < ActionMailer::Base
 
   default from: "FromThePage <support@fromthepage.com>"
   layout "admin_mailer"
-  
-  def contributor_stats(collection_id, start_date, end_date, email)
 
+  def contributor_stats(collection_id, start_date, end_date, email)
     new_contributors(collection_id, start_date, end_date)
 
     mail from: SENDING_EMAIL_ADDRESS, to: email, subject: "New Transcription Information "
@@ -22,8 +21,7 @@ class AdminMailer < ActionMailer::Base
   end
 
   def email_stats(hours)
-    
-    #call method from contributors helper
+    # call method from contributors helper
     show_email_stats(hours)
     mail from: SENDING_EMAIL_ADDRESS, to: ADMIN_EMAILS, subject: "FromThePage activity in the last #{hours} hours."
   end
@@ -70,34 +68,36 @@ class AdminMailer < ActionMailer::Base
 
   class OwnerCollectionActivity
     attr_accessor :owner, :collections, :collaborators, :since, :comments, :activity
-    
+
     def initialize(owner, activity_since)
       @owner = owner
       @since = activity_since
       @collections = owner.all_owner_collections_updated_since(activity_since)
       @collaborators = owner.new_collaborators_since(activity_since)
       @comments = Deed
-        .where(collection: @collections)
-        .where('created_at > ?', activity_since)
-        .where(deed_type: DeedType::NOTE_ADDED)
+                  .where(collection: @collections)
+                  .where('created_at > ?', activity_since)
+                  .where(deed_type: DeedType::NOTE_ADDED)
       @activity = Deed.includes(:collection)
-        .where(collection: @collections)
-        .where('created_at > ?', activity_since)
-        .where.not(deed_type: DeedType::NOTE_ADDED)
-        .group_by{ |d| d.collection.title }
+                      .where(collection: @collections)
+                      .where('created_at > ?', activity_since)
+                      .where.not(deed_type: DeedType::NOTE_ADDED)
+                      .group_by { |d| d.collection.title }
     end
-    
+
     class << self
-      def build(owner, activity_since=1.day.ago)
+      def build(owner, activity_since = 1.day.ago)
         AdminMailer::OwnerCollectionActivity.new(owner, activity_since)
       end
     end
   end
+
   private
+
   def admin_emails
     User.where(:admin => true).to_a.map { |u| u.email }
   end
-  
+
   def add_inline_attachments!
     attachments.inline["logo.png"] = File.read("#{Rails.root}/app/assets/images/logo.png")
   end

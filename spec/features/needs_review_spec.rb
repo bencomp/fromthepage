@@ -112,7 +112,7 @@ describe "needs review", :order => :defined do
     pages.each do |p|
       expect(page.find('.maincol')).to have_selector('a', text: p.title)
     end
-    #look at review list
+    # look at review list
     click_button('Pages That Need Review')
     expect(page.find('.maincol')).to have_selector('a', text: @page4.title)
     expect(page.find('.maincol')).to have_selector('a', text: @page5.title)
@@ -122,7 +122,7 @@ describe "needs review", :order => :defined do
     expect(page).to have_button('View All Pages')
     expect(page.find('.pagination_info')).to have_content(@work.pages.review.count)
 
-    #return to original list
+    # return to original list
     click_button('View All Pages')
     pages = @work.pages.limit(5)
     pages.each do |p|
@@ -130,7 +130,7 @@ describe "needs review", :order => :defined do
     end
     expect(page).to have_button('Pages That Need Review')
     expect(page.find('.pagination_info')).to have_content(@work.pages.count)
-    #look at translated review list
+    # look at translated review list
     click_button('Translations That Need Review')
     expect(page.find('.maincol')).to have_selector('a', text: @page6.title)
     expect(page.find('.maincol')).not_to have_selector('a', text: @page3.title)
@@ -146,7 +146,7 @@ describe "needs review", :order => :defined do
     expect(page).to have_content("Works")
     page.click_link("Pages That Need Review")
     expect(page).to have_selector('h3', text: "Pages That Need Review")
-    #make sure a page exists; don't specify which one
+    # make sure a page exists; don't specify which one
     expect(page).to have_selector('.work-page')
     click_link("Return to collection")
     expect(page).to have_content("About")
@@ -155,7 +155,7 @@ describe "needs review", :order => :defined do
 
   it "checks collection overview stats view" do
     visit collection_path(@collection.owner, @collection)
-    #show all works before checking for stats
+    # show all works before checking for stats
     page.click_link("Show All")
     @collection.works.each do |w|
       if w.supports_translation
@@ -177,11 +177,11 @@ describe "needs review", :order => :defined do
       collection_works = page.all('.collection-work', text: w.title)
       stats = collection_works[0].find('.collection-work_stats')
       expect(stats).to have_content("#{indexed}% indexed")
-      expect(stats).to have_content("#{completed+review}% #{wording}")
+      expect(stats).to have_content("#{completed + review}% #{wording}")
       unless review == 0
         expect(stats).to have_content("#{review}% needs review")
       end
-      #check for the existence of the progress bar
+      # check for the existence of the progress bar
       stats.find('.progress')
     end
   end
@@ -211,7 +211,7 @@ describe "needs review", :order => :defined do
       expect(row).to have_content(w.title)
       expect(row).to have_content(w.pages.count)
       expect(row.find('td', text: 'indexed')).to have_content(stats.pct_annotated.round)
-      expect(row).to have_content("#{completed+review}% #{wording}")
+      expect(row).to have_content("#{completed + review}% #{wording}")
       unless review == 0
         expect(row.find('td', text: 'needs review')).to have_content(review)
       end

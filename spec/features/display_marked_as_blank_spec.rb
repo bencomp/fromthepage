@@ -10,12 +10,12 @@ describe "display marked as blank" do
     work = create(:work, owner_user_id: user.id, collection_id: collection.id)
     page1 = create(:page, work_id: work.id)
     deed = create(:deed, {
-      deed_type: deed_type,
-      page_id: page1.id,
-      work_id: work.id,
-      collection_id: collection.id,
-      user_id: user.id
-      })
+                    deed_type: deed_type,
+                    page_id: page1.id,
+                    work_id: work.id,
+                    collection_id: collection.id,
+                    user_id: user.id
+                  })
 
     # Visit page
     visit 'deed/listing'
@@ -36,12 +36,12 @@ describe "display marked as blank" do
     work = create(:work, owner_user_id: user.id, collection_id: collection.id)
     page1 = create(:page, work_id: work.id)
     deed = create(:deed, {
-      deed_type: deed_type,
-      page_id: page1.id,
-      work_id: work.id,
-      collection_id: collection.id,
-      user_id: user.id
-      })
+                    deed_type: deed_type,
+                    page_id: page1.id,
+                    work_id: work.id,
+                    collection_id: collection.id,
+                    user_id: user.id
+                  })
 
     # Visit page
     visit 'collections'
@@ -62,12 +62,12 @@ describe "display marked as blank" do
     work = create(:work, owner_user_id: user.id, collection_id: collection.id)
     page1 = create(:page, work_id: work.id)
     deed = create(:deed, {
-      deed_type: deed_type,
-      page_id: page1.id,
-      work_id: work.id,
-      collection_id: collection.id,
-      user_id: user.id
-      })
+                    deed_type: deed_type,
+                    page_id: page1.id,
+                    work_id: work.id,
+                    collection_id: collection.id,
+                    user_id: user.id
+                  })
 
     # Visit page
     visit "#{user.login}/#{collection.slug}"

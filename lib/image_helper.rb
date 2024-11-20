@@ -1,33 +1,31 @@
-#require_dependency "user"
+# require_dependency "user"
 require 'fileutils'
 require 'rmagick'
 require 'zip'
 include Magick
 
 module ImageHelper
-  
   #############################
   # Code for new zoom feature
   #############################
 
-  def self.unzip_file (file, destination)
+  def self.unzip_file(file, destination)
     print "upzip_file(#{file})\n"
-    
+
     Zip::File.open(file) do |zip_file|
       zip_file.each do |f|
-#        f_path=File.join(destination, File.basename(f.name))
+        #        f_path=File.join(destination, File.basename(f.name))
         # FileUtils.mkdir_p(File.dirname(destination)) unless Dir.exist? destination
         outfile = File.join(destination, f.name)
         FileUtils.mkdir_p(File.dirname(outfile))
- 
+
         print "\textracting #{outfile}\n"
         zip_file.extract(f, outfile)
       end
     end
-    
   end
-  
-  def self.extract_pdf(filename, ocr=false)
+
+  def self.extract_pdf(filename, ocr = false)
     pattern = Regexp.new(File.extname(filename) + "$")
     destination = filename.gsub(pattern, '')
     FileUtils.mkdir(destination) unless File.exists?(destination)
@@ -47,7 +45,7 @@ module ImageHelper
         system(pdftotext)
       end
     end
-    
+
     destination
   end
 
@@ -61,8 +59,7 @@ module ImageHelper
       compress_image(filename)
     end
   end
-      
-  
+
   MAX_FILE_SIZE = 2000000
 
   def self.compress_files_in_dir(dirname)
@@ -73,23 +70,23 @@ module ImageHelper
   def self.compress_image(filename)
     if needs_compression?(filename)
       extension = File.extname(filename)
-      working_file = File.join(File.dirname(filename),"resizing.#{extension}")
+      working_file = File.join(File.dirname(filename), "resizing.#{extension}")
       9.downto(2).each do |decile|
         GC.start
         percent = decile * 10
         compressed = Magick::ImageList.new(filename)
-        compressed.write(working_file) { |options| options.quality = percent}
+        compressed.write(working_file) { |options| options.quality = percent }
         p "Compressed file is now #{File.size(working_file)} at quality #{percent}"
 
         unless needs_compression? working_file
           print "compressed.write('#{filename}')  { self.quality = #{percent} }"
-          break #we're done here
+          break # we're done here
         end
       end
       File.unlink(filename)
       FileUtils.cp(working_file, filename)
       File.unlink(working_file)
-    end  
+    end
   end
 
   def self.convert_tiff(filename)
@@ -134,7 +131,7 @@ module ImageHelper
   def shrink_file(input_file, output_file, factor)
     Rails.logger.debug("DEBUG ImageHelper if=#{input_file} of=#{output_file}")
     orig = Magick::ImageList.new(input_file)
-    fraction = 1.to_f / (2.to_f ** factor)
+    fraction = 1.to_f / (2.to_f**factor)
     smaller = orig.resize(fraction)
     smaller.write(output_file)
     smaller = nil
@@ -164,7 +161,7 @@ module ImageHelper
     if @logger
       @logger.debug("ImageHelper rotate(#{image.id}, #{orientation}, #{factor})")
     end
-    if ( 0 != orientation)
+    if (0 != orientation)
       file = image.shrunk_file(factor)
       if @logger
         @logger.debug("ImageHelper rotating #{file}")
@@ -188,13 +185,12 @@ module ImageHelper
     orig = nil
     crop = nil
     GC.start
-##    image.update_attribute(:crop_completed, true)
-##    TitledImage.transaction(image) do
-#      image = TitledImage.find(image.id)
-#      image.crop_completed = true
-#      image.save!
-##    end
+    ##    image.update_attribute(:crop_completed, true)
+    ##    TitledImage.transaction(image) do
+    #      image = TitledImage.find(image.id)
+    #      image.crop_completed = true
+    #      image.save!
+    ##    end
     safe_update(image, { :crop_completed => true })
   end
-
 end

@@ -85,7 +85,6 @@ class TexFigure < ApplicationRecord
     end
   end
 
-
   def preprocess_latex
     File.unlink(artifact_file_path) if File.exist?(artifact_file_path)
     File.unlink(raw_pdf_file_path) if File.exist?(raw_pdf_file_path)
@@ -93,9 +92,9 @@ class TexFigure < ApplicationRecord
   end
 
   #  XELATEX='/usr/local/texlive/2017/bin/x86_64-linux/xelatex'
-  XELATEX='xelatex'
-  PDFCROP='pdfcrop'
-  PDF2SVG='pdf2svg'
+  XELATEX = 'xelatex'
+  PDFCROP = 'pdfcrop'
+  PDF2SVG = 'pdf2svg'
 
   def run_latex
     latex_command = "#{XELATEX} -interaction batchmode -output-directory #{TexFigure.artifact_dir_name(self.page_id)} #{source_file_path}"
@@ -111,7 +110,7 @@ class TexFigure < ApplicationRecord
     puts crop_command
     puts `#{crop_command}  2>&1`
 
-    #convert_command = "convert -density 300 #{cropped_pdf_file_path} #{artifact_file_path}"
+    # convert_command = "convert -density 300 #{cropped_pdf_file_path} #{artifact_file_path}"
     convert_command = "#{PDF2SVG} #{cropped_pdf_file_path} #{artifact_file_path}"
     logger.info(convert_command)
     puts convert_command
@@ -131,16 +130,16 @@ class TexFigure < ApplicationRecord
     y = 45
     error_lines.each do |error|
       error_line_string << "<tspan x=\"10\" y=\"#{y}\"> #{error} </tspan>"
-      y=y+10
+      y = y + 10
     end
-    svg_string= <<EOF
-<?xml version="1.0" encoding="UTF-8"?>
-      <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="200" height="90" viewBox="0 0 293 10" version="1.1">
-      <text x="10" y="20" style="fill:red;">LaTex Processing Error:
-        #{error_line_string}
-      </text>
-      </svg>
-EOF
+    svg_string = <<~EOF
+      <?xml version="1.0" encoding="UTF-8"?>
+            <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="200" height="90" viewBox="0 0 293 10" version="1.1">
+            <text x="10" y="20" style="fill:red;">LaTex Processing Error:
+              #{error_line_string}
+            </text>
+            </svg>
+    EOF
     File.open(artifact_file_path, 'w') { |file| file.write(svg_string) }
   end
 
@@ -167,7 +166,7 @@ EOF
   ##############
   ARTIFACT_EXTENSION = "svg"
 
-  def text_to_png(infile,outfile)
+  def text_to_png(infile, outfile)
     puts "TexFiture.text_to_png(#{infile},#{outfile})"
     command = "convert -size 1000x2000 xc:white -pointsize 12 -fill red -annotate +15+15 \"@#{infile}\" -trim -bordercolor \"#FFF\" -border 10 +repage #{outfile}"
     puts command

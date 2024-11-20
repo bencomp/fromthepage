@@ -1,5 +1,4 @@
 class StaticController < ApplicationController
-
   def splash
     if !session[:welcome_lightbox]
       @show_welcome_lightbox = false
@@ -12,7 +11,7 @@ class StaticController < ApplicationController
   end
 
   def landing_page
-    if user_signed_in? && params[:logo] != 'true' 
+    if user_signed_in? && params[:logo] != 'true'
       if current_user.admin
         return redirect_to admin_path
       elsif current_user.owner
@@ -43,5 +42,4 @@ class StaticController < ApplicationController
   def digital_scholarship
     render layout: false
   end
-
 end

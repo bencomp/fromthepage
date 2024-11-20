@@ -2,8 +2,6 @@ class QualitySamplingsController < ApplicationController
   before_action :set_quality_sampling, only: [:show, :edit, :update, :destroy, :review]
   before_action :authorized?
 
-
-
   # GET /quality_samplings
   def index
     # do we have a sampling?
@@ -24,14 +22,14 @@ class QualitySamplingsController < ApplicationController
 
     @work_samplings, @user_samplings = @quality_sampling.sampling_objects
     # TODO sometimes work_samplings returns bad data -- why?
-    @works = Work.where(id: @work_samplings.keys).sort{|a,b| a.id <=> b.id }
-    @users = User.where(id: @user_samplings.keys).sort{|a,b| a.id <=> b.id }
+    @works = Work.where(id: @work_samplings.keys).sort { |a, b| a.id <=> b.id }
+    @users = User.where(id: @user_samplings.keys).sort { |a, b| a.id <=> b.id }
     @max_approval_delta = @quality_sampling.max_approval_delta
   end
 
-
   def review
-    redirect_to collection_sampling_review_page_path(@collection.owner, @collection, @quality_sampling, @quality_sampling.next_unsampled_page, flow: "quality-sampling")
+    redirect_to collection_sampling_review_page_path(@collection.owner, @collection, @quality_sampling,
+                                                     @quality_sampling.next_unsampled_page, flow: "quality-sampling")
   end
 
   def initialize_sample
@@ -63,19 +61,21 @@ class QualitySamplingsController < ApplicationController
   end
 
   private
-    def authorized?
-      unless user_signed_in? && current_user.can_review?(@collection)
-        redirect_to new_user_session_path
-      end
-    end
 
-    # Use callbacks to share common setup or constraints between actions.
-    def set_quality_sampling
-      @quality_sampling = QualitySampling.find(params[:id])
+  def authorized?
+    unless user_signed_in? && current_user.can_review?(@collection)
+      redirect_to new_user_session_path
     end
+  end
 
-    # Only allow a trusted parameter "white list" through.
-    def quality_sampling_params
-      params.require(:quality_sampling).permit(:sample_type, :start_time, :previous_start, :user_id, :collection_id, :field, :additional_pages)
-    end
+  # Use callbacks to share common setup or constraints between actions.
+  def set_quality_sampling
+    @quality_sampling = QualitySampling.find(params[:id])
+  end
+
+  # Only allow a trusted parameter "white list" through.
+  def quality_sampling_params
+    params.require(:quality_sampling).permit(:sample_type, :start_time, :previous_start, :user_id, :collection_id,
+                                             :field, :additional_pages)
+  end
 end

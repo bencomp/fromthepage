@@ -31,7 +31,7 @@ class PageController < ApplicationController
 
     render :plain => doc.to_xml, :layout => false, :content_type => 'text/xml'
   end
-  
+
   def delete
     @page.destroy
     flash[:notice] = t('.page_deleted')
@@ -48,10 +48,9 @@ class PageController < ApplicationController
     redirect_back fallback_location: @page
   end
 
-
   # reordering functions
   def reorder_page
-    if(params[:direction]=='up')
+    if (params[:direction] == 'up')
       @page.move_higher
     else
       @page.move_lower
@@ -81,7 +80,8 @@ class PageController < ApplicationController
       if subaction == 'save_and_new'
         ajax_redirect_to({ :controller => 'dashboard', :action => 'startproject', :anchor => 'create-work' })
       else
-        ajax_redirect_to({ :controller => 'work', :action => 'pages_tab', :work_id => @work.id, :anchor => 'create-page' })
+        ajax_redirect_to({ :controller => 'work', :action => 'pages_tab', :work_id => @work.id,
+                           :anchor => 'create-page' })
       end
     else
       render :new
@@ -93,7 +93,7 @@ class PageController < ApplicationController
     attributes = page_params.to_h.except("base_image")
     if page_params[:status].blank?
       attributes['status'] = nil
-    end   
+    end
     page.update_columns(attributes) # bypass page version callbacks
     flash[:notice] = t('.page_updated')
     page.work.work_statistic.recalculate if page.work.work_statistic
@@ -104,7 +104,6 @@ class PageController < ApplicationController
 
     redirect_back fallback_location: page
   end
-
 
   private
 
@@ -122,7 +121,7 @@ class PageController < ApplicationController
     page.base_image = filename
     page.shrink_factor = 0
     set_dimensions(page)
-    #reduce_by_one(page)
+    # reduce_by_one(page)
   end
 
   def reduce_by_one(page)
@@ -144,5 +143,4 @@ class PageController < ApplicationController
   def page_params
     params.require(:page).permit(:page, :title, :base_image, :status, :translation_status)
   end
-
 end

@@ -1,7 +1,6 @@
 require 'spec_helper'
 
 describe "export tasks" do
-
   before :all do
     @owner = User.find_by(login: OWNER)
     @collection = @owner.all_owner_collections.second
@@ -14,7 +13,7 @@ describe "export tasks" do
   end
 
   it "exports all works in a collection" do
-    #TODO add better export tests for new UI
+    # TODO add better export tests for new UI
     visit dashboard_owner_path
     page.find('.collection_title', text: @collection.title).click_link(@collection.title)
     page.find('.tabs').click_link("Export")
@@ -55,7 +54,6 @@ describe "export tasks" do
     expect(page).to have_content("Administration")
   end
 
-
   it "exports a work as xhtml" do
     visit "/export?collection_id=#{@collection.id}"
     expect(page).to have_content("Export Individual Works")
@@ -85,13 +83,11 @@ describe "export tasks" do
   end
 
   it "fails to export a table csv" do
-    #this collection has no table data, so these shouldn't be available
+    # this collection has no table data, so these shouldn't be available
     visit "/export?collection_id=#{@collection.id}"
     expect(page).to have_content("Export Individual Works")
     expect(page.find('tr', text: @work.title)).not_to have_selector('.btnCsvTblExport')
     expect(page).not_to have_content("Export All Tables")
     expect(page).not_to have_selector('#btnExportTables')
-
   end
-
 end

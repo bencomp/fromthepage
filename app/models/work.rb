@@ -78,7 +78,9 @@ class Work < ApplicationRecord
      "uploaded_filename"]
 
   before_destroy :cleanup_images # must precede pages association
-  has_many :pages, -> { order 'position' }, :dependent => :destroy, :after_add => :update_statistic, :after_remove => :update_statistic
+  has_many :pages, -> {
+    order 'position'
+  }, :dependent => :destroy, :after_add => :update_statistic, :after_remove => :update_statistic
   belongs_to :owner, :class_name => 'User', :foreign_key => 'owner_user_id', optional: true
 
   belongs_to :next_untranscribed_page, foreign_key: 'next_untranscribed_page_id', class_name: "Page", optional: true
@@ -86,7 +88,7 @@ class Work < ApplicationRecord
 
   belongs_to :collection, counter_cache: :works_count, optional: true
   has_many :deeds, -> { order 'created_at DESC' }, :dependent => :destroy
-  has_many :notes #, through: :pages
+  has_many :notes # , through: :pages
   has_one :ia_work, :dependent => :destroy
   has_one :sc_manifest, :dependent => :destroy
   has_one :work_statistic, :dependent => :destroy
@@ -116,15 +118,21 @@ class Work < ApplicationRecord
 
   mount_uploader :picture, PictureUploader
 
-  scope :unrestricted, -> { where(restrict_scribes: false)}
-  scope :restricted, -> { where(restrict_scribes: true)}
+  scope :unrestricted, -> { where(restrict_scribes: false) }
+  scope :restricted, -> { where(restrict_scribes: true) }
   scope :order_by_recent_activity, -> { joins(:deeds).reorder('deeds.created_at DESC').distinct }
   scope :order_by_recent_inactivity, -> { joins(:deeds).reorder('deeds.created_at ASC').distinct }
-  scope :order_by_completed, -> { joins(:work_statistic).reorder('work_statistics.complete DESC')}
-  scope :order_by_incomplete, -> { joins(:work_statistic).reorder('work_statistics.complete ASC')}
-  scope :order_by_translation_completed, -> { joins(:work_statistic).reorder('work_statistics.translation_complete DESC')}
-  scope :incomplete_transcription, -> { where(supports_translation: false).joins(:work_statistic).where.not(work_statistics: {complete: 100})}
-  scope :incomplete_translation, -> { where(supports_translation: true).joins(:work_statistic).where.not(work_statistics: {translation_complete: 100})}
+  scope :order_by_completed, -> { joins(:work_statistic).reorder('work_statistics.complete DESC') }
+  scope :order_by_incomplete, -> { joins(:work_statistic).reorder('work_statistics.complete ASC') }
+  scope :order_by_translation_completed, -> {
+    joins(:work_statistic).reorder('work_statistics.translation_complete DESC')
+  }
+  scope :incomplete_transcription, -> {
+    where(supports_translation: false).joins(:work_statistic).where.not(work_statistics: { complete: 100 })
+  }
+  scope :incomplete_translation, -> {
+    where(supports_translation: true).joins(:work_statistic).where.not(work_statistics: { translation_complete: 100 })
+  }
   scope :incomplete_description, -> { where(description_status: DescriptionStatus::NEEDS_WORK) }
 
   scope :ocr_enabled, -> { where(ocr_correction: true) }
@@ -141,8 +149,6 @@ class Work < ApplicationRecord
       INCOMPLETE
     ]
   end
-
-
 
   module TitleStyle
     REPLACE = 'REPLACE'
@@ -161,6 +167,7 @@ class Work < ApplicationRecord
     def self.style_from_prior_title(title)
       PAGE_ARABIC
     end
+
     def self.number_from_prior_title(style, title)
       regex_string = style.sub('REPLACE', "(\\d+)")
       md = title.match(/#{regex_string}/)
@@ -176,19 +183,19 @@ class Work < ApplicationRecord
   def update_derivatives
     # searchable_metadata is currently the only derivative
     metadata_hash = self.merge_metadata(true)
-    value_array = metadata_hash.map {|e| e['value']}
+    value_array = metadata_hash.map { |e| e['value'] }
 
     self.searchable_metadata = value_array.flatten.join("\n\n")
   end
 
-  def merge_metadata(include_user=false)
+  def merge_metadata(include_user = false)
     metadata = []
     if self.original_metadata
       metadata += JSON[self.original_metadata]
     end
-    work_metadata = self.attributes.select{|k,v| PUBLIC_ATTRIBUTES.include?(k) && !v.blank?}
+    work_metadata = self.attributes.select { |k, v| PUBLIC_ATTRIBUTES.include?(k) && !v.blank? }
 
-    work_metadata.each_pair { |label,value| metadata << { "label" => label.titleize, "value" => value.to_s } }
+    work_metadata.each_pair { |label, value| metadata << { "label" => label.titleize, "value" => value.to_s } }
 
     if include_user && !self.metadata_description.blank?
       metadata += JSON[self.metadata_description]
@@ -196,7 +203,6 @@ class Work < ApplicationRecord
 
     metadata
   end
-
 
   def access_object(user)
     if self.collection.show_to?(user)
@@ -212,28 +218,28 @@ class Work < ApplicationRecord
         nil
       end
     else
-      nil #false
+      nil # false
     end
   end
 
   def verbatim_transcription_plaintext
-    self.pages.select{ |page| !page.status_blank? }.map{ |page| page.verbatim_transcription_plaintext }.join("\n\n\n")
+    self.pages.select { |page| !page.status_blank? }.map { |page| page.verbatim_transcription_plaintext }.join("\n\n\n")
   end
 
   def verbatim_translation_plaintext
-    self.pages.map { |page| page.verbatim_translation_plaintext}.join("\n\n\n")
+    self.pages.map { |page| page.verbatim_translation_plaintext }.join("\n\n\n")
   end
 
   def emended_transcription_plaintext
-    self.pages.select{|page| !page.status_blank? }.map { |page| page.emended_transcription_plaintext}.join("\n\n\n")
+    self.pages.select { |page| !page.status_blank? }.map { |page| page.emended_transcription_plaintext }.join("\n\n\n")
   end
 
   def emended_translation_plaintext
-    self.pages.map { |page| page.emended_translation_plaintext}.join("\n\n\n")
+    self.pages.map { |page| page.emended_translation_plaintext }.join("\n\n\n")
   end
 
   def searchable_plaintext
-    self.pages.select{|page| !page.status_blank? }.map { |page| page.search_text}.join("\n\n\n")
+    self.pages.select { |page| !page.status_blank? }.map { |page| page.search_text }.join("\n\n\n")
   end
 
   def suggest_next_page_title
@@ -254,9 +260,8 @@ class Work < ApplicationRecord
   end
 
   def articles
-    Article.joins(:page_article_links).where(page_article_links: {page_id: self.pages.ids}).distinct
+    Article.joins(:page_article_links).where(page_article_links: { page_id: self.pages.ids }).distinct
   end
-
 
   def document_date=(date_as_edtf)
     if date_as_edtf.respond_to? :to_edtf
@@ -315,11 +320,11 @@ class Work < ApplicationRecord
         my_annotations << comment if comment.comment_type == 'annotation'
       end
     end
-    my_annotations.sort! { |a,b| b.created_at <=> a.created_at }
+    my_annotations.sort! { |a, b| b.created_at <=> a.created_at }
     return my_annotations[0..9]
   end
 
-  def update_statistic(changed_page=nil) #association callbacks pass the page being added/removed, but we don't care
+  def update_statistic(changed_page = nil) # association callbacks pass the page being added/removed, but we don't care
     unless self.work_statistic
       self.work_statistic = WorkStatistic.new
     end
@@ -335,8 +340,10 @@ class Work < ApplicationRecord
   end
 
   def cleanup_images
-    absolute_filenames = pages.map { |page| [page.base_image, page.thumbnail_filename]}.flatten
-    modern_filenames = absolute_filenames.map{|fn| fn.sub(/^.*uploaded/, File.join(Rails.root, "public", "images", "uploaded"))}
+    absolute_filenames = pages.map { |page| [page.base_image, page.thumbnail_filename] }.flatten
+    modern_filenames = absolute_filenames.map { |fn|
+      fn.sub(/^.*uploaded/, File.join(Rails.root, "public", "images", "uploaded"))
+    }
     modern_filenames.each do |fn|
       if File.exist?(fn)
         File.delete(fn) if File.exist?(fn)
@@ -351,7 +358,8 @@ class Work < ApplicationRecord
         # if it is, delete it
         Dir.rmdir(new_dir_name)
       else
-        logger.debug "Directory #{new_dir_name} is not empty; contents are #{Dir.glob(File.join(new_dir_name, "*")).sort.join(', ')}"
+        logger.debug "Directory #{new_dir_name} is not empty; contents are #{Dir.glob(File.join(new_dir_name,
+                                                                                                "*")).sort.join(', ')}"
       end
     end
   end
@@ -392,7 +400,6 @@ class Work < ApplicationRecord
     super.gsub('_', '-')
   end
 
-
   def slug_candidates
     if self.slug
       [:slug]
@@ -409,9 +416,9 @@ class Work < ApplicationRecord
   end
 
   def set_featured_page
-      num = (self.pages.count/3).round
-      page = self.pages.offset(num).first
-      self.update_columns(featured_page: page.id)
+    num = (self.pages.count / 3).round
+    page = self.pages.offset(num).first
+    self.update_columns(featured_page: page.id)
   end
 
   def field_based
@@ -456,7 +463,6 @@ class Work < ApplicationRecord
         element = {}
         element['transcription_field_id'] = id.to_i
 
-
         cell_data.each do |key, value|
           element['label'] = key
 
@@ -497,7 +503,8 @@ class Work < ApplicationRecord
   def alert_bento
     if defined?(BENTO_ENABLED) && BENTO_ENABLED
       if self.owner.owner_works.count == 1
-        $bento.track(identity: {email: self.owner.email}, event: '$action', details: {action_information: "first-upload"})
+        $bento.track(identity: { email: self.owner.email }, event: '$action',
+                     details: { action_information: "first-upload" })
       end
     end
   end
@@ -510,7 +517,7 @@ class Work < ApplicationRecord
         unless m['label'].blank?
           label = m['label']
           if label.is_a? Array
-            label=label.first['@value']
+            label = label.first['@value']
           end
 
           collection = self.collection
@@ -522,7 +529,7 @@ class Work < ApplicationRecord
             test = collection.metadata_coverages.where(key: label).first
             # increment count field if a record is returned
             if test
-              test.count+= 1
+              test.count += 1
               test.save
             else
               mc.key = label.to_sym

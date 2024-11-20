@@ -36,14 +36,13 @@ Rails.application.configure do
 
   config.action_mailer.perform_caching = false
 
-  Rails.application.routes.default_url_options = config.action_mailer.default_url_options =  { host: 'localhost:3000' }
+  Rails.application.routes.default_url_options = config.action_mailer.default_url_options = { host: 'localhost:3000' }
 
   config.action_mailer.delivery_method = :postmark
 
   config.action_mailer.postmark_settings = {
     api_token: ''
   }
-
 
   # Print deprecation notices to the Rails logger.
   config.active_support.deprecation = :log
@@ -73,14 +72,14 @@ Rails.application.configure do
 
   # Allow codespaces host
   unless ENV["CODESPACE_NAME"].nil?
-    config.hosts << ENV["CODESPACE_NAME"]+"-3000.app.github.dev"
+    config.hosts << ENV["CODESPACE_NAME"] + "-3000.app.github.dev"
   end
 
   # location of system calls on this machine
   NEATO = '/usr/bin/neato'
   RAKE = '/usr/bin/env rake'
-  TEX_PATH='/usr/local/texlive/2017/bin/x86_64-linux/'
-  UPGRADE_FORM_LINK='https://app.bentonow.com/f/6247d0278bfbafc3ef75b753f26a46d2/red-tree-885/'
+  TEX_PATH = '/usr/local/texlive/2017/bin/x86_64-linux/'
+  UPGRADE_FORM_LINK = 'https://app.bentonow.com/f/6247d0278bfbafc3ef75b753f26a46d2/red-tree-885/'
 
   config.pontiiif_server = 'http://pontiiif.brumfieldlabs.com/'
 

@@ -40,5 +40,4 @@ class Article::Combine
     to_article.save!
     from_article.destroy
   end
-
 end

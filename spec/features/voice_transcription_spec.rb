@@ -15,25 +15,25 @@ describe "voice transcription", :order => :defined do
   end
 
   it "checks for microphones (not enabled)" do
-    #first set the work to translation
+    # first set the work to translation
     @work.supports_translation = true
     @work.save
-     #transcribe
+    # transcribe
     visit collection_transcribe_page_path(@collection.owner, @collection, @work, @page)
     if page.has_content?('Facsimile')
       page.find('.tabs').click_link('Transcribe')
     end
-    #transcription div
+    # transcription div
     expect(page).not_to have_selector('.voice-recognition')
     expect(page).not_to have_selector('#start_img')
-    #note
+    # note
     expect(page).not_to have_selector('.voice-info')
     expect(page).not_to have_selector('#start_img_note')
-    #translate
+    # translate
     page.find('.tabs').click_link('Translate')
     expect(page).not_to have_selector('.voice-recognition')
     expect(page).not_to have_selector('#start_img')
-    #article
+    # article
     visit collection_article_edit_path(@collection.owner, @collection, @article)
     expect(page).not_to have_selector('.article-editarea')
     expect(page).not_to have_selector('#start_img')
@@ -50,25 +50,25 @@ describe "voice transcription", :order => :defined do
     expect(Collection.second.voice_recognition).to be true
   end
 
-it "checks for microphones (enabled)" do
-    #first set the work to translation
+  it "checks for microphones (enabled)" do
+    # first set the work to translation
     @work.supports_translation = true
     @work.save
-    #transcribe
+    # transcribe
     visit collection_transcribe_page_path(@collection.owner, @collection, @work, @page)
     if page.has_content?('Facsimile')
       page.find('.tabs').click_link('Transcribe')
     end
-    #transcription div
+    # transcription div
     expect(page).to have_selector('.voice-recognition')
     expect(page).to have_selector('#start_img')
-    #note
+    # note
     expect(page).to have_selector('#start_img_note')
-    #translate
+    # translate
     page.find('.tabs').click_link('Translate')
     expect(page).to have_selector('.voice-recognition')
     expect(page).to have_selector('#start_img')
-    #article
+    # article
     visit collection_article_edit_path(@collection.owner, @collection, @article)
     expect(page).to have_selector('.article-editarea')
     expect(page).to have_selector('#start_img')
@@ -81,11 +81,10 @@ it "checks for microphones (enabled)" do
     page.find('.side-tabs').click_link('Look & Feel')
     page.uncheck 'collection_voice_recognition'
     # expect(page).not_to have_selector('#lang_opts')
-    #turn off work translation
+    # turn off work translation
     @work.supports_translation = false
     @work.save
     sleep(2)
     expect(Collection.second.voice_recognition).to be false
   end
-
 end

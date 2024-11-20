@@ -24,14 +24,14 @@
 #
 class Article < ApplicationRecord
   include XmlSourceProcessor
-  #include ActiveModel::Dirty
+  # include ActiveModel::Dirty
 
   before_save :process_source
 
   validates_presence_of :title
 
-  validates :latitude, allow_blank: true, numericality: { less_than_or_equal_to: 90, greater_than_or_equal_to: -90}
-  validates :longitude, allow_blank: true, numericality: { less_than_or_equal_to: 180, greater_than_or_equal_to: -180}
+  validates :latitude, allow_blank: true, numericality: { less_than_or_equal_to: 90, greater_than_or_equal_to: -90 }
+  validates :longitude, allow_blank: true, numericality: { less_than_or_equal_to: 180, greater_than_or_equal_to: -180 }
 
   has_and_belongs_to_many :categories, -> { distinct }
   belongs_to :collection, optional: true
@@ -62,9 +62,9 @@ class Article < ApplicationRecord
     self.page_article_links.includes(:page).order("pages.work_id, pages.title")
   end
 
-  #needed for document sets to correctly display articles
+  # needed for document sets to correctly display articles
   def show_links(collection)
-    self.page_article_links.includes(:page).where(pages: {work_id: collection.works.ids})
+    self.page_article_links.includes(:page).where(pages: { work_id: collection.works.ids })
   end
 
   def page_list
@@ -77,15 +77,14 @@ class Article < ApplicationRecord
 
   def self.delete_orphan_articles
     # don't delete orphan articles with contents
-    Article.where(provenance: nil).
-      where('source_text IS NULL AND id NOT IN (SELECT article_id FROM page_article_links)').destroy_all
+    Article.where(provenance: nil)
+           .where('source_text IS NULL AND id NOT IN (SELECT article_id FROM page_article_links)').destroy_all
   end
 
   #######################
   # Related Articles
   #######################
   def related_article_ranks
-
   end
 
   def gis_enabled?
@@ -103,7 +102,7 @@ class Article < ApplicationRecord
     words = self.title.tr(',.', ' ').split(' ')
     # sort it by word length, longest to shortest
     words.keep_if { |word| word.match(/\w\w/) }
-    words.sort! { |x,y| x.length <=> y.length }
+    words.sort! { |x, y| x.length <=> y.length }
     words.reverse!
     # for each word
     all_matches = []
@@ -116,7 +115,7 @@ class Article < ApplicationRecord
       # logger.debug("@collection.id: #{self.collection.id}")
 
       current_matches =
-        self.collection.articles.where("id <> ? AND title like ?", self.id, "%#{word}%" )
+        self.collection.articles.where("id <> ? AND title like ?", self.id, "%#{word}%")
       # current_matches.delete self
       #      logger.debug("DEBUG: #{current_matches.size} matches for #{word}")
       #    keep sort order for new words (append to previous list)
@@ -135,12 +134,11 @@ class Article < ApplicationRecord
     return all_matches
   end
 
-
   #######################
   # XML Source support
   #######################
   # tested
-  def clear_links(type='does_not_apply')
+  def clear_links(type = 'does_not_apply')
     # clear out the existing links to this page
     if self.id
       ArticleArticleLink.where("source_article_id = #{self.id}").destroy_all
@@ -162,7 +160,6 @@ class Article < ApplicationRecord
   #######################
   # tested
   def create_version
-
     unless self.saved_change_to_title? || self.saved_change_to_source_text?
       return
     end
@@ -199,4 +196,3 @@ class Article < ApplicationRecord
     [category] + ancestors
   end
 end
-

@@ -66,5 +66,4 @@ class IaLeaf < ApplicationRecord
   def cache_dir_path
     File.join(CACHE_DIRECTORY_ROOT, ia_work.book_id)
   end
-
 end

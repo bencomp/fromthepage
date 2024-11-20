@@ -3,5 +3,4 @@ namespace :fromthepage do
   task update_recent_stats: :environment do
     CollectionStatistic.update_recent_statistics
   end
-
 end

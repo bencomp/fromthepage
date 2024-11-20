@@ -10,7 +10,7 @@ class PageBlockController < AdminController
   def update
     @page_block = PageBlock.find(params[:page_block][:id])
     @page_block.update(page_block_params)
-    redirect_to :action=>'list'
+    redirect_to :action => 'list'
   end
 
   def new
@@ -27,5 +27,4 @@ class PageBlockController < AdminController
   def page_block_params
     params.require(:page_block).permit(:page_block, :id, :tag, :origin_action, :origin_controller, :html)
   end
-
 end

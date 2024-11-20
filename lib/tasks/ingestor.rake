@@ -1,9 +1,8 @@
 require 'image_helper'
 require 'open-uri' # TODO: Move elsewhere
 namespace :fromthepage do
-
   desc "Resize image file or directories of image files"
-  task :compress_images, [:pathname] => :environment  do  |t,args|
+  task :compress_images, [:pathname] => :environment do |t, args|
     pathname = args.pathname
     p "compressing #{pathname}"
 
@@ -16,7 +15,7 @@ namespace :fromthepage do
   end
 
   desc "Process a document upload"
-  task :process_document_upload, [:document_upload_id] => :environment do |t,args|
+  task :process_document_upload, [:document_upload_id] => :environment do |t, args|
     require "#{Rails.root}/app/helpers/error_helper"
     include ErrorHelper
 
@@ -47,9 +46,7 @@ namespace :fromthepage do
         print "SMTP Failed: Exception: #{e.message}"
       end
     end
-
   end
-
 
   def process_batch(document_upload, path, temp_dir_seed)
     # copy to temp dir
@@ -60,7 +57,7 @@ namespace :fromthepage do
     unzip_tree(temp_dir)
     # extract any pdfs
     unpdf_tree(temp_dir, document_upload.ocr)
-    #convert tiffs to jpgs
+    # convert tiffs to jpgs
     untiff_tree(temp_dir)
     # resize files
     compress_tree(temp_dir)
@@ -82,15 +79,15 @@ namespace :fromthepage do
       print "\tunzip_tree considering #{path}\n"
       if Dir.exist? path
         print "Found directory #{path}\n"
-        unzip_tree(path) #recurse
+        unzip_tree(path) # recurse
       else
         if File.extname(path) == '.ZIP' || File.extname(path) == '.zip'
           print "Found zipfile #{path}\n"
-          #unzip and recur
-          destination = File.join(File.dirname(path), File.basename(path).sub(File.extname(path),''))
+          # unzip and recur
+          destination = File.join(File.dirname(path), File.basename(path).sub(File.extname(path), ''))
           print "Calling unzip_file(#{path}, #{destination})\n"
           ImageHelper.unzip_file(path, destination)
-          unzip_tree(destination)  # recurse
+          unzip_tree(destination) # recurse
         end
       end
     end
@@ -104,11 +101,11 @@ namespace :fromthepage do
       print "\tunpdf_tree considering #{path})\n"
       if Dir.exist? path
         print "\tunpdf_tree Found directory #{path}\n"
-        unpdf_tree(path, ocr) #recurse
+        unpdf_tree(path, ocr) # recurse
       else
         if File.extname(path) == '.PDF' || File.extname(path) == '.pdf'
           print "\t\tunpdf_tree Found pdf #{path}\n"
-          #extract
+          # extract
           destination = ImageHelper.extract_pdf(path, ocr)
           print "\t\tunpdf_tree Extracted to #{destination}\n"
           # copy any metadata.yml to the destination
@@ -131,17 +128,16 @@ namespace :fromthepage do
       print "\tuntiff_tree considering #{path})\n"
       if Dir.exist? path
         print "Found directory #{path}\n"
-        untiff_tree(path) #recurse
+        untiff_tree(path) # recurse
       else
         if File.extname(path).match TIFF_FILE_EXTENSIONS_PATTERN
           print "Found tiff #{path}\n"
-          #convert tiff to jpg
+          # convert tiff to jpg
           destination = ImageHelper.convert_tiff(path)
           GC.start
         end
       end
     end
-
   end
 
   def compress_tree(temp_dir)
@@ -151,7 +147,7 @@ namespace :fromthepage do
       print "compress_tree handling #{path})\n"
       if Dir.exist? path
         print "Found directory #{path}\n"
-        compress_tree(path) #recurse
+        compress_tree(path) # recurse
       else
         if File.extname(path).match IMAGE_FILE_EXTENSIONS_PATTERN
           print "Found image #{path}\n"
@@ -164,33 +160,31 @@ namespace :fromthepage do
   def ingest_tree(document_upload, temp_dir)
     print "ingest_tree(#{temp_dir})\n"
     # first process all sub-directories
-    clean_dir=temp_dir.gsub('[','\[').gsub(']','\]')
+    clean_dir = temp_dir.gsub('[', '\[').gsub(']', '\]')
     ls = Dir.glob(File.join(clean_dir, "*")).sort
     ls.each do |path|
       print "ingest_tree considering #{path})\n"
       if Dir.exist? path
         print "Found directory #{path}\n"
-        ingest_tree(document_upload, path) #recurse
+        ingest_tree(document_upload, path) # recurse
       end
     end
 
     # now process this directory if it contains image files
-    image_files = Dir.glob(File.join(clean_dir, "*.{"+IMAGE_FILE_EXTENSIONS.join(',')+"}")).sort
+    image_files = Dir.glob(File.join(clean_dir, "*.{" + IMAGE_FILE_EXTENSIONS.join(',') + "}")).sort
     if image_files.length > 0
       print "Found #{image_files.length} image files in #{temp_dir} -- converting to a work\n"
       convert_to_work(document_upload, temp_dir)
       print "Finished converting files in #{temp_dir} to a work\n"
     end
     print "Finished ingest_tree for #{temp_dir}\n"
-
   end
-
 
   def convert_to_work(document_upload, path)
     print "convert_to_work creating database record for #{path}\n"
     print "\tconvert_to_work owner = #{document_upload.user.login}\n"
     print "\tconvert_to_work collection = #{document_upload.collection.title}\n"
-    print "\tconvert_to_work default title = #{File.basename(path).ljust(3,'.')}\n"
+    print "\tconvert_to_work default title = #{File.basename(path).ljust(3, '.')}\n"
     print "\tconvert_to_work looking for metadata.yml in #{File.join(File.dirname(path), 'metadata.yml')}\n"
 
     begin
@@ -210,7 +204,7 @@ namespace :fromthepage do
 
     print "\tconvert_to_work loaded metadata.yml values \n#{yaml.to_s}\n"
 
-    User.current_user=document_upload.user
+    User.current_user = document_upload.user
     document_sets = []
     if yaml
       yaml.keep_if { |e| INGESTOR_ALLOWLIST.include? e }
@@ -222,16 +216,18 @@ namespace :fromthepage do
     work.owner = document_upload.user
     work.collection = document_upload.collection
 
-    work.title = File.basename(path).ljust(3,'.') unless work.title
+    work.title = File.basename(path).ljust(3, '.') unless work.title
 
     work.uploaded_filename = File.basename(path)
 
     if document_upload.ocr
-      clean_dir=path.gsub('[','\[').gsub(']','\]')
+      clean_dir = path.gsub('[', '\[').gsub(']', '\]')
       if (Dir.glob(File.join(clean_dir, "*.txt")).count + Dir.glob(File.join(clean_dir, "*.xml")).count) > 0
         work.ocr_correction = true
       else
-        print "\tOCR correction specified but no files found in #{File.join(path, "page*.txt")} or #{File.join(path, "page*.xml")}\n"
+        print "\tOCR correction specified but no files found in #{File.join(path,
+                                                                            "page*.txt")} or #{File.join(path,
+                                                                                                         "page*.xml")}\n"
       end
     end
 
@@ -246,11 +242,11 @@ namespace :fromthepage do
 
     FileUtils.mkdir_p(new_dir_name)
     IMAGE_FILE_EXTENSIONS.each do |ext|
-#      print "\t\tconvert_to_work copying #{File.join(path, "*.#{ext}")} to #{new_dir_name}:\n"
-      clean_dir=path.gsub('[','\[').gsub(']','\]')
+      #      print "\t\tconvert_to_work copying #{File.join(path, "*.#{ext}")} to #{new_dir_name}:\n"
+      clean_dir = path.gsub('[', '\[').gsub(']', '\]')
       FileUtils.cp(Dir.glob(File.join(clean_dir, "*.#{ext}")), new_dir_name)
       Dir.glob(File.join(clean_dir, "*.#{ext}")).sort.each { |fn| print "\t\t\tcp #{fn} to #{new_dir_name}\n" }
-#      print "\t\tconvert_to_work copied #{File.join(path, "*.#{ext}")} to #{new_dir_name}\n"
+      #      print "\t\tconvert_to_work copied #{File.join(path, "*.#{ext}")} to #{new_dir_name}\n"
     end
 
     # at this point, the new dir should have exactly what we want-- only image files that are adequately compressed.
@@ -260,14 +256,14 @@ namespace :fromthepage do
     ls = sorted_numeric_pages.concat(alpha_numeric_pages)
 
     GC.start
-    ls.each_with_index do |image_fn,i|
+    ls.each_with_index do |image_fn, i|
       page = Page.new
       print "\t\tconvert_to_work created new page\n"
 
       if document_upload.preserve_titles
         page.title = File.basename(image_fn, ".*")
       else
-        page.title = "#{i+1}"
+        page.title = "#{i + 1}"
       end
 
       page.base_image = image_fn
@@ -338,7 +334,6 @@ namespace :fromthepage do
     document_sets
   end
 
-
   def temp_dir_path(seed)
     File.join(Dir.tmpdir, 'fromthepage_uploads', seed)
   end
@@ -347,12 +342,11 @@ namespace :fromthepage do
     print "creating temp directory #{temp_dir}\n"
     FileUtils.mkdir_p(temp_dir)
     print "copying #{File.join(path, '*')} to #{temp_dir}\n"
-    FileUtils.cp_r(Dir.glob(File.join(path,"*")), temp_dir)
+    FileUtils.cp_r(Dir.glob(File.join(path, "*")), temp_dir)
   end
 
   desc "Import IIIF Collection"
-  task :import_iiif, [:collection_url] => :environment  do  |t,args|
-
+  task :import_iiif, [:collection_url] => :environment do |t, args|
     ScCollection.delete_all
     ScManifest.delete_all
     ScCanvas.delete_all
@@ -413,13 +407,10 @@ namespace :fromthepage do
           sc_canvas.sc_service_profile = service["profile"]
 
           sc_canvas.save!
-
         end
       rescue OpenURI::HTTPError
         print "WARNING:\tHTTP error accessing manifest #{sc_manifest.sc_id}\n"
       end
-
     end
   end
-
 end

@@ -1,5 +1,4 @@
 class FacetsController < ApplicationController
-
   def enable
     @collection = Collection.find(params[:collection_id])
     @collection.facets_enabled = true
@@ -58,7 +57,7 @@ class FacetsController < ApplicationController
     collection.metadata_coverages.each do |m|
       metadata = params[:metadata][m[:key]]
       unless metadata.nil?
-        if !metadata['order'].blank?  
+        if !metadata['order'].blank?
           facet_label = metadata['label'].blank? ? m.key : metadata['label']
           if m.facet_config.label.nil?
             label_hash = {}
@@ -84,21 +83,22 @@ class FacetsController < ApplicationController
     if errors.empty?
       # renumber down to contiguous 0-indexed values
       collection.facet_configs.where(:input_type => 'text').where.not(:order => nil).each_with_index do |facet_config, i|
-        facet_config.order=i
+        facet_config.order = i
         facet_config.save!
       end
       collection.facet_configs.where(:input_type => 'date').where.not(:order => nil).each_with_index do |facet_config, i|
-        facet_config.order=i
+        facet_config.order = i
         facet_config.save!
       end
       FacetConfig.populate_facets(collection)
 
-      redirect_to collection_facets_path(collection.owner, collection), notice: t('collection.facets.collection_facets_updated_successfully')
+      redirect_to collection_facets_path(collection.owner, collection),
+                  notice: t('collection.facets.collection_facets_updated_successfully')
     else
-      render('collection/facets', :locals => { :@metadata_coverages => collection.metadata_coverages, :@errors => errors })
+      render('collection/facets',
+             :locals => { :@metadata_coverages => collection.metadata_coverages, :@errors => errors })
     end
   end
-
 
   def localize
     render('collection/localize', layout: false)
@@ -116,5 +116,3 @@ class FacetsController < ApplicationController
     ajax_redirect_to collection_facets_path(@collection.owner, @collection)
   end
 end
-
-

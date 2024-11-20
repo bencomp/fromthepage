@@ -90,15 +90,15 @@ class ArticleController < ApplicationController
 
   def show
     sql =
-      'SELECT count(*) as link_count, '+
-      'a.title as title, '+
-      'a.id as article_id '+
-      'FROM page_article_links to_links '+
-      'INNER JOIN page_article_links from_links '+
-      '  ON to_links.page_id = from_links.page_id '+
-      'INNER JOIN articles a '+
-      '  ON from_links.article_id = a.id '+
-      "WHERE to_links.article_id = #{@article.id} "+
+      'SELECT count(*) as link_count, ' +
+      'a.title as title, ' +
+      'a.id as article_id ' +
+      'FROM page_article_links to_links ' +
+      'INNER JOIN page_article_links from_links ' +
+      '  ON to_links.page_id = from_links.page_id ' +
+      'INNER JOIN articles a ' +
+      '  ON from_links.article_id = a.id ' +
+      "WHERE to_links.article_id = #{@article.id} " +
       " AND from_links.article_id != #{@article.id} "
     sql += "GROUP BY a.title, a.id "
     logger.debug(sql)
@@ -166,15 +166,15 @@ class ArticleController < ApplicationController
 
     # csv = CSV.read(params[:upload][:file].tempfile, :headers => true)
     begin
-      csv = CSV.read(params[:upload][:file].tempfile, :headers=>true)
+      csv = CSV.read(params[:upload][:file].tempfile, :headers => true)
     rescue
       contents = File.read(params[:upload][:file].tempfile)
       detection = CharlockHolmes::EncodingDetector.detect(contents)
 
       csv = CSV.read(params[:upload][:file].tempfile,
-                      :encoding => "bom|#{detection[:encoding]}",
-                      :liberal_parsing => true,
-                      :headers => true)
+                     :encoding => "bom|#{detection[:encoding]}",
+                     :liberal_parsing => true,
+                     :headers => true)
     end
 
     provenance = params[:upload][:file].original_filename + " (uploaded #{Time.now} UTC)"
@@ -184,7 +184,8 @@ class ArticleController < ApplicationController
       # create subjects if heading checks out
       csv.each do |row|
         title = row['HEADING']
-        article = @collection.articles.where(:title => title).first || Article.new(:title => title, :provenance => provenance)
+        article = @collection.articles.where(:title => title).first || Article.new(:title => title,
+                                                                                   :provenance => provenance)
         article.collection = @collection
         article.source_text = row['ARTICLE']
         article.uri = row['URI']

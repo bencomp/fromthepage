@@ -38,7 +38,7 @@ describe "uploads data for collections", :order => :defined do
     expect(page).to have_content("ac.uk")
   end
 
-# commenting until we fix VCR
+  # commenting until we fix VCR
   # it "tests for transcribed works" do
   #   col = Collection.where(:title => 'Hebrew Manuscripts').first
   #   works = col.works
@@ -63,5 +63,4 @@ describe "uploads data for collections", :order => :defined do
     log_file = "#{Rails.root}/public/imports/#{col.id}_iiif.log"
     File.delete(log_file)
   end
-
 end

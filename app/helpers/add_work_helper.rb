@@ -3,7 +3,7 @@ module AddWorkHelper
 
   def new_work
     @document_upload = DocumentUpload.new
-    @document_upload.collection=@collection
+    @document_upload.collection = @collection
     @universe_collections = ScCollection.universe
     @sc_collections = ScCollection.all
   end
@@ -57,6 +57,7 @@ module AddWorkHelper
   end
 
   protected
+
   def record_deed
     deed = Deed.new
     deed.work = @work
@@ -73,5 +74,4 @@ module AddWorkHelper
   def work_params
     params.require(:work).permit(:title, :description, :collection_id)
   end
-
 end

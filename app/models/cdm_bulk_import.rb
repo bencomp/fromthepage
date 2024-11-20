@@ -29,16 +29,13 @@ class CdmBulkImport < ApplicationRecord
 
     logger.info rake_call
     system(rake_call)
-
   end
 
   def collection_or_document_set
-    if md=self.collection_param.match(/D(\d+)/)
+    if md = self.collection_param.match(/D(\d+)/)
       DocumentSet.find_by(id: md[1])
     else
       Collection.find_by(id: self.collection_param)
     end
   end
-
-
 end

@@ -7,12 +7,13 @@ Fromthepage::Application.routes.draw do
     end
   end
 
-
   root to: redirect('/landing')
   get '/landing', to: 'static#landing_page'
   get '/blog' => redirect("https://fromthepage.com/blog/")
 
-  devise_for :users, controllers: { masquerades: "masquerades", registrations: "registrations", omniauth_callbacks: 'users/omniauth_callbacks' }
+  devise_for :users,
+             controllers: { masquerades: "masquerades", registrations: "registrations",
+                            omniauth_callbacks: 'users/omniauth_callbacks' }
 
   devise_scope :user do
     get "users/new_trial" => "registrations#new_trial"
@@ -211,7 +212,8 @@ Fromthepage::Application.routes.draw do
     post 'new_upload', to: 'dashboard#new_upload'
     post 'create_work', to: 'dashboard#create_work'
     get 'your_hours', to: 'dashboard#your_hours'
-    get 'dashboard/download_hours_letter/:start_date/:end_date/:time_duration', to: 'dashboard#download_hours_letter', as: 'download_hours_letter', format: :pdf
+    get 'dashboard/download_hours_letter/:start_date/:end_date/:time_duration', to: 'dashboard#download_hours_letter',
+                                                                                as: 'download_hours_letter', format: :pdf
   end
 
   scope 'search_attempt', as: 'search_attempt' do
@@ -326,8 +328,10 @@ Fromthepage::Application.routes.draw do
     get 'edit_metadata_fields', to: 'transcription_field#edit_metadata_fields'
     get 'line_form', to: 'transcription_field#line_form'
     post 'add_fields', to: 'transcription_field#add_fields'
-    get ':transcription_field_id/configure_multiselect_options', to: 'transcription_field#multiselect_form', as: 'configure_multiselect_options'
-    post ':transcription_field_id/save_multiselect_options', to: 'transcription_field#save_multiselect', as: 'save_multiselect_options'
+    get ':transcription_field_id/configure_multiselect_options', to: 'transcription_field#multiselect_form',
+                                                                 as: 'configure_multiselect_options'
+    post ':transcription_field_id/save_multiselect_options', to: 'transcription_field#save_multiselect',
+                                                             as: 'save_multiselect_options'
 
     scope 'spreadsheet_column', as: 'spreadsheet_column' do
       patch 'reorder', to: 'transcription_field#reorder_columns'
@@ -355,7 +359,6 @@ Fromthepage::Application.routes.draw do
     get ':feature', to: 'user#feature_toggle'
   end
 
-
   namespace :api do
     get '/', to: "api#help"
     namespace :v1 do
@@ -366,7 +369,6 @@ Fromthepage::Application.routes.draw do
       get 'bulk_export/:bulk_export_id/download', to: 'bulk_export#download', as: 'bulk_export_download'
     end
   end
-
 
   get '/iiif/:id/manifest', :to => 'iiif#manifest', as: :iiif_manifest
   get '/iiif/:id/layer/:type', :to => 'iiif#layer'
@@ -381,36 +383,51 @@ Fromthepage::Application.routes.draw do
   get '/iiif/:work_id/status', :to => 'iiif#manifest_status'
   get '/iiif/:work_id/structured', :to => 'iiif#structured_data_endpoint', as: 'iiif_work_strucured_data'
   get '/iiif/:work_id/structured/:page_id', :to => 'iiif#structured_data_endpoint', as: 'iiif_page_strucured_data'
-  get '/iiif/:collection_id/structured/config/work', :to => 'iiif#structured_data_work_config_endpoint', as: 'iiif_work_strucured_data_config'
-  get '/iiif/:collection_id/structured/config/page', :to => 'iiif#structured_data_page_config_endpoint', as: 'iiif_page_strucured_data_config'
-  get '/iiif/structured/config/field/:transcription_field_id', :to => 'iiif#structured_data_field_config_endpoint', as: 'iiif_strucured_data_field_config'
-  get '/iiif/structured/config/column/:spreadsheet_column_id', :to => 'iiif#structured_data_column_config_endpoint', as: 'iiif_strucured_data_column_config'
+  get '/iiif/:collection_id/structured/config/work', :to => 'iiif#structured_data_work_config_endpoint',
+                                                     as: 'iiif_work_strucured_data_config'
+  get '/iiif/:collection_id/structured/config/page', :to => 'iiif#structured_data_page_config_endpoint',
+                                                     as: 'iiif_page_strucured_data_config'
+  get '/iiif/structured/config/field/:transcription_field_id', :to => 'iiif#structured_data_field_config_endpoint',
+                                                               as: 'iiif_strucured_data_field_config'
+  get '/iiif/structured/config/column/:spreadsheet_column_id', :to => 'iiif#structured_data_column_config_endpoint',
+                                                               as: 'iiif_strucured_data_column_config'
   get '/iiif/:work_id/:page_id/status', :to => 'iiif#canvas_status'
   # {scheme}://{host}/{prefix}/{identifier}/annotation/{name}
   get '/iiif/:page_id/annotation/:annotation_type', :to => 'iiif#annotation'
   get '/iiif/:work_id/sequence/:sequence_name', :to => 'iiif#sequence'
   get '/iiif/for/:id', :to => 'iiif#for', :constraints => { :id => /.*/ } # redirector
-  get '/iiif/contributions/:domain/:terminus_a_quo/:terminus_ad_quem', constraints: { domain: /.*/ }, :to => 'iiif#contributions'
-  get '/iiif/contributions/:domain/:terminus_a_quo', constraints: { domain: /.*/ },:to => 'iiif#contributions'
+  get '/iiif/contributions/:domain/:terminus_a_quo/:terminus_ad_quem', constraints: { domain: /.*/ },
+                                                                       :to => 'iiif#contributions'
+  get '/iiif/contributions/:domain/:terminus_a_quo', constraints: { domain: /.*/ }, :to => 'iiif#contributions'
   get '/iiif/contributions/:domain', constraints: { domain: /.*/ }, :to => 'iiif#contributions'
 
   get '/iiif/:work_id/export/tei', as: 'iiif_work_export_tei', to: 'iiif#export_work_tei'
   get '/iiif/:work_id/export/html', as: 'iiif_work_export_html', to: 'iiif#export_work_html'
-  get '/iiif/:work_id/export/plaintext/searchable', as: 'iiif_work_export_plaintext_searchable', to: 'iiif#export_work_plaintext_searchable'
-  get '/iiif/:work_id/export/plaintext/verbatim', as: 'iiif_work_export_plaintext_verbatim', to: 'iiif#export_work_plaintext_verbatim'
-  get '/iiif/:work_id/export/plaintext/emended', as: 'iiif_work_export_plaintext_emended', to: 'iiif#export_work_plaintext_emended'
-  get '/iiif/:work_id/export/plaintext/translation/verbatim', as: 'iiif_work_export_plaintext_translation_verbatim', to: 'iiif#export_work_plaintext_translation_verbatim'
-  get '/iiif/:work_id/export/plaintext/translation/emended', as: 'iiif_work_export_plaintext_translation_emended', to: 'iiif#export_work_plaintext_translation_emended'
-  get '/iiif/:work_id/export/:page_id/plaintext/searchable', as: 'iiif_page_export_plaintext_searchable', to: 'iiif#export_page_plaintext_searchable'
-  get '/iiif/:work_id/export/:page_id/plaintext/verbatim', as: 'iiif_page_export_plaintext_verbatim', to: 'iiif#export_page_plaintext_verbatim'
-  get '/iiif/:work_id/export/:page_id/plaintext/translation/verbatim', as: 'iiif_page_export_plaintext_translation_verbatim', to: 'iiif#export_page_plaintext_translation_verbatim'
-  get '/iiif/:work_id/export/:page_id/plaintext/emended', as: 'iiif_page_export_plaintext_emended', to: 'iiif#export_page_plaintext_emended'
-  get '/iiif/:work_id/export/:page_id/plaintext/translation/emended', as: 'iiif_page_export_plaintext_translation_emended', to: 'iiif#export_page_plaintext_translation_emended'
+  get '/iiif/:work_id/export/plaintext/searchable', as: 'iiif_work_export_plaintext_searchable',
+                                                    to: 'iiif#export_work_plaintext_searchable'
+  get '/iiif/:work_id/export/plaintext/verbatim', as: 'iiif_work_export_plaintext_verbatim',
+                                                  to: 'iiif#export_work_plaintext_verbatim'
+  get '/iiif/:work_id/export/plaintext/emended', as: 'iiif_work_export_plaintext_emended',
+                                                 to: 'iiif#export_work_plaintext_emended'
+  get '/iiif/:work_id/export/plaintext/translation/verbatim', as: 'iiif_work_export_plaintext_translation_verbatim',
+                                                              to: 'iiif#export_work_plaintext_translation_verbatim'
+  get '/iiif/:work_id/export/plaintext/translation/emended', as: 'iiif_work_export_plaintext_translation_emended',
+                                                             to: 'iiif#export_work_plaintext_translation_emended'
+  get '/iiif/:work_id/export/:page_id/plaintext/searchable', as: 'iiif_page_export_plaintext_searchable',
+                                                             to: 'iiif#export_page_plaintext_searchable'
+  get '/iiif/:work_id/export/:page_id/plaintext/verbatim', as: 'iiif_page_export_plaintext_verbatim',
+                                                           to: 'iiif#export_page_plaintext_verbatim'
+  get '/iiif/:work_id/export/:page_id/plaintext/translation/verbatim',
+      as: 'iiif_page_export_plaintext_translation_verbatim', to: 'iiif#export_page_plaintext_translation_verbatim'
+  get '/iiif/:work_id/export/:page_id/plaintext/emended', as: 'iiif_page_export_plaintext_emended',
+                                                          to: 'iiif#export_page_plaintext_emended'
+  get '/iiif/:work_id/export/:page_id/plaintext/translation/emended',
+      as: 'iiif_page_export_plaintext_translation_emended', to: 'iiif#export_page_plaintext_translation_emended'
 
-  get '/iiif/admin/explore/:at_id', :to => 'sc_collections#explore',:constraints => { :at_id => /.*/ }
+  get '/iiif/admin/explore/:at_id', :to => 'sc_collections#explore', :constraints => { :at_id => /.*/ }
   get '/iiif/admin/import_manifest', :to => 'sc_collections#import_manifest'
 
-  get   '/iiif/admin/explore/:at_id', :to => 'sc_collections#explore',:constraints => { :at_id => /.*/ }
+  get   '/iiif/admin/explore/:at_id', :to => 'sc_collections#explore', :constraints => { :at_id => /.*/ }
   get   '/iiif/admin/import_manifest', :to => 'sc_collections#import_manifest'
 
   get   'ZenasMatthews' => 'collection#show', :collection_id => 7
@@ -446,13 +463,12 @@ Fromthepage::Application.routes.draw do
   get '/NatsStory', to: 'static#natsstory', as: :natsstory
   get '/natsstory', to: 'static#natsstory', as: :natsstory_lower
   get '/MeredithsStory', to: 'static#meredithsstory', as: :meredithsstory
-  get '/meredithsstory', to: 'static#meredithsstory', as:  :meredithsstory_lower
+  get '/meredithsstory', to: 'static#meredithsstory', as: :meredithsstory_lower
   get '/signup', to: 'static#signup', as: :signup
   get '/special_collections', to: 'static#transcription_archives', as: :special_collections
   get '/public_libraries', to: 'static#public_libraries', as: :public_libraries
   get '/digital_scholarship', to: 'static#digital_scholarship', as: :digital_scholarship
   get '/state_archives', to: 'static#state_archives', as: :state_archives
-
 
   resources :document_sets, except: [:show, :create, :edit]
 
@@ -463,7 +479,8 @@ Fromthepage::Application.routes.draw do
       get 'page-notes', to: 'notes#discussions', as: 'page_discussions'
       get 'statistics', as: :statistics, to: 'statistics#collection'
       get 'settings', as: :settings, to: 'document_sets#settings'
-      get 'settings/:document_set_id/edit_set_collaborators', to: 'document_sets#edit_set_collaborators', as: 'edit_set_collaborators'
+      get 'settings/:document_set_id/edit_set_collaborators', to: 'document_sets#edit_set_collaborators',
+                                                              as: 'edit_set_collaborators'
       get 'subjects', as: :subjects, to: 'article#list'
       get 'review', as: :review, to: 'collection#reviewer_dashboard'
       get 'works_to_review', as: :works_to_review, to: 'collection#works_to_review'
@@ -475,13 +492,15 @@ Fromthepage::Application.routes.draw do
       get 'review/user/:user_id/:page_id', as: 'user_review_page', to: 'transcribe#display_page'
       patch 'review/one_off/:page_id', as: 'oneoff_review_page_save', to: 'transcribe#save_transcription'
       patch 'review/user/:user_id/:page_id', as: 'user_review_page_save', to: 'transcribe#save_transcription'
-      patch 'review/user/:user_id/approve_all/:quality_sampling_id', as: 'user_review_approve_all', to: 'collection#approve_all'
+      patch 'review/user/:user_id/approve_all/:quality_sampling_id', as: 'user_review_approve_all',
+                                                                     to: 'collection#approve_all'
 
       resources :quality_samplings
       post 'quality_sampling/initialize', as: 'initialize_sample', to: 'quality_samplings#initialize_sample'
       get 'quality_sampling/review/:id', as: 'sampling_review_flow', to: 'quality_samplings#review'
       get 'quality_sampling/:quality_sampling_id/:page_id', as: 'sampling_review_page', to: 'transcribe#display_page'
-      patch 'quality_sampling/:quality_sampling_id/:user_id/:page_id', as: 'sampling_review_page_save', to: 'transcribe#save_transcription'
+      patch 'quality_sampling/:quality_sampling_id/:user_id/:page_id', as: 'sampling_review_page_save',
+                                                                       to: 'transcribe#save_transcription'
 
       get 'export', as: :export, to: 'export#index'
       get 'edit_fields', as: :edit_fields, to: 'transcription_field#edit_fields'
@@ -505,10 +524,8 @@ Fromthepage::Application.routes.draw do
       get 'needs_metadata', as: :needs_metadata, to: 'collection#needs_metadata_works'
       get 'start_transcribing', as: :start_transcribing, to: 'collection#start_transcribing'
 
-
-
-      #work related routes
-      #have to use match because it must be both get and post
+      # work related routes
+      # have to use match because it must be both get and post
       match ':work_id', to: 'display#read_work', via: [:get, :post], as: :read_work
 
       resources :work, path: '', param: :work_id, only: [:edit] do
@@ -530,13 +547,17 @@ Fromthepage::Application.routes.draw do
       get ':work_id/about', param: :work_id, as: :work_about, to: 'work#show'
       get ':work_id/contents', param: :work_id, as: :work_contents, to: 'display#list_pages'
       get ':work_id/help', param: :work_id, as: :work_help, to: 'static#transcribe_help'
-      get ':work_id/export/plaintext/searchable', as: 'work_export_plaintext_searchable', to: 'export#work_plaintext_searchable'
-      get ':work_id/export/plaintext/verbatim', as: 'work_export_plaintext_verbatim', to: 'export#work_plaintext_verbatim'
+      get ':work_id/export/plaintext/searchable', as: 'work_export_plaintext_searchable',
+                                                  to: 'export#work_plaintext_searchable'
+      get ':work_id/export/plaintext/verbatim', as: 'work_export_plaintext_verbatim',
+                                                to: 'export#work_plaintext_verbatim'
       get ':work_id/export/plaintext/emended', as: 'work_export_plaintext_emended', to: 'export#work_plaintext_emended'
-      get ':work_id/export/plaintext/translation/verbatim', as: 'work_export_plaintext_translation_verbatim', to: 'export#work_plaintext_translation_verbatim'
-      get ':work_id/export/plaintext/translation/emended', as: 'work_export_plaintext_translation_emended', to: 'export#work_plaintext_translation_emended'
+      get ':work_id/export/plaintext/translation/verbatim', as: 'work_export_plaintext_translation_verbatim',
+                                                            to: 'export#work_plaintext_translation_verbatim'
+      get ':work_id/export/plaintext/translation/emended', as: 'work_export_plaintext_translation_emended',
+                                                           to: 'export#work_plaintext_translation_emended'
 
-      #page related routes
+      # page related routes
       get ':work_id/display/:page_id', as: 'display_page', to: 'display#display_page'
       get ':work_id/transcribe/:page_id', as: 'transcribe_page', to: 'transcribe#display_page'
       get ':work_id/transcribe_monitor/:page_id', as: 'monitor_view', to: 'transcribe#monitor_view'
@@ -544,23 +565,31 @@ Fromthepage::Application.routes.draw do
       get ':work_id/translate/:page_id', as: 'translate_page', to: 'transcribe#translate'
       get ':work_id/help/:page_id', as: 'help_page', to: 'transcribe#help'
       get ':work_id/still_editing/:page_id', to: 'transcribe#still_editing', as: 'transcribe_still_editing'
-      get ':work_id/next_untranscribed_page', as: 'next_untranscribed_page', to: 'transcribe#goto_next_untranscribed_page'
+      get ':work_id/next_untranscribed_page', as: 'next_untranscribed_page',
+                                              to: 'transcribe#goto_next_untranscribed_page'
 
       get ':work_id/edit/:page_id', as: 'edit_page', to: 'page#edit'
       get ':work_id/versions/:page_id', as: 'page_version', to: 'page_version#list'
-      get ':work_id/export/:page_id/plaintext/searchable', as: 'page_export_plaintext_searchable', to: 'export#page_plaintext_searchable'
-      get ':work_id/export/:page_id/plaintext/verbatim', as: 'page_export_plaintext_verbatim', to: 'export#page_plaintext_verbatim'
-      get ':work_id/export/:page_id/plaintext/translation/verbatim', as: 'page_export_plaintext_translation_verbatim', to: 'export#page_plaintext_translation_verbatim'
-      get ':work_id/export/:page_id/plaintext/emended', as: 'page_export_plaintext_emended', to: 'export#page_plaintext_emended'
-      get ':work_id/export/:page_id/plaintext/translation/emended', as: 'page_export_plaintext_translation_emended', to: 'export#page_plaintext_translation_emended'
+      get ':work_id/export/:page_id/plaintext/searchable', as: 'page_export_plaintext_searchable',
+                                                           to: 'export#page_plaintext_searchable'
+      get ':work_id/export/:page_id/plaintext/verbatim', as: 'page_export_plaintext_verbatim',
+                                                         to: 'export#page_plaintext_verbatim'
+      get ':work_id/export/:page_id/plaintext/translation/verbatim', as: 'page_export_plaintext_translation_verbatim',
+                                                                     to: 'export#page_plaintext_translation_verbatim'
+      get ':work_id/export/:page_id/plaintext/emended', as: 'page_export_plaintext_emended',
+                                                        to: 'export#page_plaintext_emended'
+      get ':work_id/export/:page_id/plaintext/translation/emended', as: 'page_export_plaintext_translation_emended',
+                                                                    to: 'export#page_plaintext_translation_emended'
       get 'export/version'
 
       # Page Annotations
-      get ':work_id/annotation/:page_id/html/transcription', to: 'annotation#page_transcription_html', as: 'annotation_page_transcription_html'
-      get ':work_id/annotation/:page_id/html/translation', to: 'annotation#page_translation_html', as: 'annotation_page_translation_html'
+      get ':work_id/annotation/:page_id/html/transcription', to: 'annotation#page_transcription_html',
+                                                             as: 'annotation_page_transcription_html'
+      get ':work_id/annotation/:page_id/html/translation', to: 'annotation#page_translation_html',
+                                                           as: 'annotation_page_translation_html'
       get ':work_id/:page_id/alto_xml', as: 'alto_xml', to: 'page#alto_xml'
 
-      #article related routes
+      # article related routes
       get 'article/:article_id', to: 'article#show', as: 'article_show'
       get 'article/:article_id/edit', to: 'article#edit', as: 'article_edit'
       get 'article_version/:article_id', to: 'article_version#list', as: 'article_version'

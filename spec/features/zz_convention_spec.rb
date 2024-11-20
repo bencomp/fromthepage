@@ -26,7 +26,7 @@ describe "convention related tasks", :order => :defined do
   it "checks for collection level transcription conventions" do
     visit collection_read_work_path(@work.collection.owner, @work.collection, @work)
     page.find('.work-page_title', text: @page.title).click_link(@page.title)
-    #if the page isn't already transcribed, must go to Transcribe tab
+    # if the page isn't already transcribed, must go to Transcribe tab
     if page.has_content?("Facsimile")
       page.find('.tabs').click_link(@tab)
     end
@@ -91,6 +91,4 @@ describe "convention related tasks", :order => :defined do
     expect(page).to have_content @new_convention
     expect(page).not_to have_content @work_convention
   end
-
 end
-
