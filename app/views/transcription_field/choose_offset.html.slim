@@ -15,10 +15,8 @@ div.columns
     p= t('.replace_image_description')
     =link_to t('.replace_image'), transcription_field_spreadsheet_column_choose_offset_path(@transcription_field), class: 'button'
 
-
-
-=stylesheet_link_tag "https://cdn.jsdelivr.net/npm/@recogito/annotorious-openseadragon@latest/dist/annotorious.min.css"
-=javascript_include_tag "https://cdn.jsdelivr.net/npm/@recogito/annotorious-openseadragon@latest/dist/openseadragon-annotorious.min.js"
+=stylesheet_link_tag "annotorious/annotorious-openseadragon.css"
+=javascript_include_tag "annotorious/annotorious-openseadragon.js"
 
 -x_in_pixels = 0
 -w_in_pixels = @page.base_width
